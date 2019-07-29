@@ -2,7 +2,7 @@
 # test: Inputs
 The following are all available inputs for `test`.
 
- 
+
 ## Required inputs
 <p name="test.input1">
     <b>test.input1</b><br />

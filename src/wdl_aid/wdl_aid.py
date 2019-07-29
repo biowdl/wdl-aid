@@ -7,8 +7,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,7 +21,7 @@
 import argparse
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union
 
 import WDL
 from jinja2 import Template
@@ -31,7 +31,7 @@ DEFAULT_TEMPLATE = dedent("""
     # {{ workflow_name }}: Inputs
     The following are all available inputs for `{{workflow_name}}`.
 
-    {% if required is defined %} 
+    {% if required is defined %}
     ## Required inputs
     {% for ri in required -%}
     <p name="{{ ri.name }}">
@@ -41,7 +41,7 @@ DEFAULT_TEMPLATE = dedent("""
     </p>
     {% endfor -%}
     {% endif -%}
-     
+
     {% if common is defined %}
     ## Other common inputs
     {% for ci in common -%}
@@ -52,7 +52,7 @@ DEFAULT_TEMPLATE = dedent("""
     </p>
     {% endfor -%}
     {% endif -%}
-    
+
     {% if advanced is defined %}
     ## Advanced inputs
     <details>
@@ -65,7 +65,7 @@ DEFAULT_TEMPLATE = dedent("""
     </p>
     {% endfor -%}
     {% endif -%}
-    
+
     {% if other is defined %}
     ## Other inputs
     <details>
@@ -78,11 +78,11 @@ DEFAULT_TEMPLATE = dedent("""
     </p>
     {% endfor -%}
     {% endif -%}
-    
+
     </details>
-        
+
     > Generated using WDL AID ({{ wdl_aid_version }})
-    
+
     """)
 
 
@@ -171,7 +171,9 @@ def get_description(parameter_meta: dict, input_name: str,
     try:
         entry = parameter_meta.get(input_name, None)
         return entry.get(description_key,
-            entry if fallback_description_to_object else fallback_description)
+                         entry
+                         if fallback_description_to_object
+                         else fallback_description)
     except AttributeError:  # The parameter_meta for this input is not a dict.
         if fallback_description_to_object:
             return parameter_meta.get(input_name, fallback_description)
@@ -262,25 +264,27 @@ def main():
 
     for name, inp in inputs:
         category = ("required"
-                     if name in required_inputs
-                     else get_category(parameter_meta, name,
-                                       args.category_key,
-                                       args.fallback_category))
+                    if name in required_inputs
+                    else get_category(parameter_meta, name,
+                                      args.category_key,
+                                      args.fallback_category))
         try:
             values[category].append({
                 "name": name, "type": inp.rhs.type,
                 "default": str(inp.rhs.expr),
-                "description": get_description(parameter_meta, name,
-                    args.description_key, args.fallback_description,
-                    args.fallback_description_to_object)
+                "description":
+                    get_description(parameter_meta, name, args.description_key,
+                                    args.fallback_description,
+                                    args.fallback_description_to_object)
             })
         except KeyError:
             values[category] = [{
                 "name": name, "type": inp.rhs.type,
                 "default": str(inp.rhs.expr),
-                "description": get_description(parameter_meta, name,
-                    args.description_key, args.fallback_description,
-                    args.fallback_description_to_object)
+                "description":
+                    get_description(parameter_meta, name, args.description_key,
+                                    args.fallback_description,
+                                    args.fallback_description_to_object)
             }]
 
     template = Template(args.template.read_text()
