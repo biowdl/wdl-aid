@@ -69,6 +69,10 @@ the rest and assign them the `required` category regardless of the
 category assigned in the parameter_meta section.
 
 ## The default template
+The default template will render a markdown file only describing the
+inputs. You will likely want to write a template with some additional
+information about the workflow in question.
+
 The default template contains supports the following categories:
 - required
 - common
