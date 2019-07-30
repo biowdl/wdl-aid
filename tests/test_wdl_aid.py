@@ -133,30 +133,30 @@ def test_get_category_fallback_category():
 def test_main_defaults(capsys):
     sys.argv = ["script", str(filesdir / Path("workflow.wdl"))]
     wa.main()
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out.splitlines(True)
     with (filesdir / Path("expected.md")).open("r") as expected_ouput:
-        expected = expected_ouput.read()
-    assert captured.out == expected
+        expected = expected_ouput.readlines()[:-1]
+    assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
 def test_main_no_required(capsys):
     sys.argv = ["script", str(filesdir / Path("workflow.wdl")),
                 "--do-not-separate-required"]
     wa.main()
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out.splitlines(True)
     with (filesdir / Path("expected_no_required.md")).open("r") as expected_ouput:
-        expected = expected_ouput.read()
-    assert captured.out == expected
+        expected = expected_ouput.readlines()[:-1]
+    assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
 def test_main_keys(capsys):
     sys.argv = ["script", str(filesdir / Path("workflow.wdl")),
                 "--description-key", "desc", "--category-key", "cat"]
     wa.main()
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out.splitlines(True)
     with (filesdir / Path("expected_keys.md")).open("r") as expected_ouput:
-        expected = expected_ouput.read()
-    assert captured.out == expected
+        expected = expected_ouput.readlines()[:-1]
+    assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
 def test_main_fallback(capsys):
@@ -165,10 +165,10 @@ def test_main_fallback(capsys):
                 "--fallback-category", "advanced",
                 "--fallback-description-to-object"]
     wa.main()
-    captured = capsys.readouterr()
+    captured = capsys.readouterr().out.splitlines(True)
     with (filesdir / Path("expected_fallback.md")).open("r") as expected_ouput:
-        expected = expected_ouput.read()
-    assert captured.out == expected
+        expected = expected_ouput.readlines()[:-1]
+    assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
 def test_main_template(capsys):
@@ -187,7 +187,7 @@ def test_main_output(tmpdir):
                 "-o", output_file.strpath]
     wa.main()
     with output_file.open() as out_file:
-        result = out_file.read()
+        result = out_file.readlines()
     with (filesdir / Path("expected.md")).open("r") as expected_ouput:
-        expected = expected_ouput.read()
-    assert result == expected
+        expected = expected_ouput.readlines()[:-1]
+    assert result == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]

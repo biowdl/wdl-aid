@@ -26,6 +26,8 @@ from typing import Any, Dict, List, Union
 import WDL
 from jinja2 import Template
 
+from wdl_aid import __version__
+
 
 DEFAULT_TEMPLATE = dedent("""
     # {{ workflow_name }}: Inputs
@@ -260,7 +262,7 @@ def main():
 
     parameter_meta = gather_parameter_meta(wf, wf.name)
 
-    values = {"workflow_name": wf.name, "wdl_aid_version": "0.1-experimental"}
+    values = {"workflow_name": wf.name, "wdl_aid_version": __version__}
 
     for name, inp in inputs:
         category = ("required"
