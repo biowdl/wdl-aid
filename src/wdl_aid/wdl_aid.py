@@ -89,7 +89,7 @@ DEFAULT_TEMPLATE = dedent("""
 
 
 def fully_qualified_inputs(inputs: List[Union[WDL.Env.Binding,
-                                              WDL.Env.Namespace]],
+                                              WDL.Env.Bindings]],
                            namespace: str) -> (str, WDL.Decl):
     """
     :param inputs: A list of Bindings from a Namespace.
@@ -99,11 +99,11 @@ def fully_qualified_inputs(inputs: List[Union[WDL.Env.Binding,
     """
     out = []
     for inp in inputs:
-        if isinstance(inp, WDL.Env.Namespace):
-            out.extend(fully_qualified_inputs(inp.bindings, "{}.{}".format(
-                namespace, inp.namespace)))
-        else:
-            out.append(("{}.{}".format(namespace, inp.name), inp))
+        # if isinstance(inp, WDL.Env.Namespace):
+        #     out.extend(fully_qualified_inputs(inp.bindings, "{}.{}".format(
+        #         namespace, inp.namespace)))
+        # else:
+        out.append(("{}.{}".format(namespace, inp.name), inp))
     return out
 
 
@@ -270,24 +270,19 @@ def main():
                     else get_category(parameter_meta, name,
                                       args.category_key,
                                       args.fallback_category))
+        entry = {
+            "name": name,
+            "type": inp.value.type,
+            "default": str(inp.value.expr),
+            "description":
+                get_description(parameter_meta, name, args.description_key,
+                                args.fallback_description,
+                                args.fallback_description_to_object)
+            }
         try:
-            values[category].append({
-                "name": name, "type": inp.rhs.type,
-                "default": str(inp.rhs.expr),
-                "description":
-                    get_description(parameter_meta, name, args.description_key,
-                                    args.fallback_description,
-                                    args.fallback_description_to_object)
-            })
+            values[category].append(entry)
         except KeyError:
-            values[category] = [{
-                "name": name, "type": inp.rhs.type,
-                "default": str(inp.rhs.expr),
-                "description":
-                    get_description(parameter_meta, name, args.description_key,
-                                    args.fallback_description,
-                                    args.fallback_description_to_object)
-            }]
+            values[category] = [entry]
 
     template = Template(args.template.read_text()
                         if args.template is not None
