@@ -21,7 +21,7 @@
 import argparse
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 import WDL
 from jinja2 import Template
@@ -88,8 +88,7 @@ DEFAULT_TEMPLATE = dedent("""
     """)
 
 
-def fully_qualified_inputs(inputs: List[Union[WDL.Env.Binding,
-                                              WDL.Env.Bindings]],
+def fully_qualified_inputs(inputs: WDL.Env.Bindings,
                            namespace: str) -> (str, WDL.Decl):
     """
     :param inputs: A list of Bindings from a Namespace.
@@ -99,10 +98,6 @@ def fully_qualified_inputs(inputs: List[Union[WDL.Env.Binding,
     """
     out = []
     for inp in inputs:
-        # if isinstance(inp, WDL.Env.Namespace):
-        #     out.extend(fully_qualified_inputs(inp.bindings, "{}.{}".format(
-        #         namespace, inp.namespace)))
-        # else:
         out.append(("{}.{}".format(namespace, inp.name), inp))
     return out
 
