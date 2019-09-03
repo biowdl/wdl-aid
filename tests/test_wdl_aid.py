@@ -34,6 +34,7 @@ def test_fully_qualified_inputs():
     qualified_names = wa.fully_qualified_inputs(available_inputs,
                                                 doc.workflow.name)
     assert [x[0] for x in qualified_names] == ['test.sw.workflowOptional',
+                                               'test.echo.shouldBeExcluded',
                                                'test.echo.missingDescription',
                                                'test.echo.taskOptional',
                                                'test.input2',

@@ -10,6 +10,7 @@ task echo {
     input {
         String? taskOptional
         String? missingDescription
+        String? shouldBeExcluded
     }
     command {
         echo ~{taskOptional} :p
