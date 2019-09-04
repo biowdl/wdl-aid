@@ -105,7 +105,6 @@ The following variables are made available to the template:
   - `type`: The WDL value type of the input (eg. `String?` or 
     `Pair[Int, Boolean]`)
   - `default`: The default value of the input. If an input has no
-    default, then `None`. ***Note that these currently won't render
-    correctly, with the next release of MiniWDL this should be fixed.***
+    default, then `None`.
   - `description`: The description of the input as specified in the
     parameter_meta sections in the WDL file(s).
