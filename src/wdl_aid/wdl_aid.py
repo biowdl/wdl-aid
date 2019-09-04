@@ -88,8 +88,7 @@ DEFAULT_TEMPLATE = dedent("""
     """)
 
 
-def fully_qualified_inputs(inputs: List[Union[WDL.Env.Binding,
-                                              WDL.Env.Namespace]],
+def fully_qualified_inputs(inputs: WDL.Env.Bindings,
                            namespace: str) -> (str, WDL.Decl):
     """
     :param inputs: A list of Bindings from a Namespace.
@@ -99,11 +98,7 @@ def fully_qualified_inputs(inputs: List[Union[WDL.Env.Binding,
     """
     out = []
     for inp in inputs:
-        if isinstance(inp, WDL.Env.Namespace):
-            out.extend(fully_qualified_inputs(inp.bindings, "{}.{}".format(
-                namespace, inp.namespace)))
-        else:
-            out.append(("{}.{}".format(namespace, inp.name), inp))
+        out.append(("{}.{}".format(namespace, inp.name), inp))
     return out
 
 
@@ -127,7 +122,7 @@ def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
                           ) -> Dict[str, Any]:
     """
     :param node: A node from a workflow.
-    :param namespace: The nodes fully qualified namespace name.
+    :param namespace: The node's fully qualified namespace name.
     :return: A dictionary with all the parameter meta values, using
     fully qualified namespaces as keys.
     """
@@ -149,6 +144,60 @@ def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
         else:
             if hasattr(el, "body"):  # if or scatter
                 out.update(gather_parameter_meta(el, namespace))
+    return out
+
+
+def process_meta(meta: Dict[str, Any], namespace: str):
+    """
+    :param meta: The meta object to be processed.
+    :param namespace: The namespace to be added to the inputs mentioned
+    exclude.
+    :return: A new dictionary with the exclude key.
+    TODO Maybe add author info and the like.
+    """
+    out = {"exclude": []}
+    try:
+        wdl_aid_meta = meta.get("WDL_AID")
+        for inp in wdl_aid_meta.get("exclude", []):
+            out["exclude"].append("{}.{}".format(namespace, inp))
+        return out
+    except AttributeError:
+        return out
+
+
+def merge_dict_of_lists(old: Dict[str, List[Any]], new: Dict[str, List[Any]]):
+    for key in new:
+        try:
+            old[key].append(new[key])
+        except KeyError:
+            old[key] = new[key]
+    return old
+
+
+def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
+                            WDL.Scatter], namespace: str,) -> Dict[str, Any]:
+    """
+    :param node: A node from a workflow.
+    :param namespace: The node's fully qualified namespace name.
+    :return: A dictionary with the WDL_AID recognized meta values:
+        - "exclude": A list of inputs to be excluded.
+    """
+    out = {}
+    if hasattr(node, "meta"):
+        merge_dict_of_lists(out, process_meta(node.meta, namespace))
+    for el in node.body:
+        if hasattr(el, "callee"):  # Calls
+            if hasattr(el.callee, "body"):  # sub-workflow
+                merge_dict_of_lists(out, gather_meta(el.callee,
+                                                     "{}.{}".format(namespace,
+                                                                    el.name)))
+            else:  # Tasks
+                merge_dict_of_lists(out, process_meta(el.callee.meta,
+                                                      "{}.{}".format(namespace,
+                                                                     el.name)))
+        else:
+            if hasattr(el, "body"):  # if or scatter
+                merge_dict_of_lists(out, gather_meta(el, namespace))
     return out
 
 
@@ -261,33 +310,31 @@ def main():
                            for required_input in required_inputs]
 
     parameter_meta = gather_parameter_meta(wf, wf.name)
+    meta = gather_meta(wf, wf.name)
 
     values = {"workflow_name": wf.name, "wdl_aid_version": __version__}
 
     for name, inp in inputs:
+        if name in meta["exclude"]:
+            continue
         category = ("required"
                     if name in required_inputs
                     else get_category(parameter_meta, name,
                                       args.category_key,
                                       args.fallback_category))
+        entry = {
+            "name": name,
+            "type": inp.value.type,
+            "default": str(inp.value.expr),
+            "description":
+                get_description(parameter_meta, name, args.description_key,
+                                args.fallback_description,
+                                args.fallback_description_to_object)
+            }
         try:
-            values[category].append({
-                "name": name, "type": inp.rhs.type,
-                "default": str(inp.rhs.expr),
-                "description":
-                    get_description(parameter_meta, name, args.description_key,
-                                    args.fallback_description,
-                                    args.fallback_description_to_object)
-            })
+            values[category].append(entry)
         except KeyError:
-            values[category] = [{
-                "name": name, "type": inp.rhs.type,
-                "default": str(inp.rhs.expr),
-                "description":
-                    get_description(parameter_meta, name, args.description_key,
-                                    args.fallback_description,
-                                    args.fallback_description_to_object)
-            }]
+            values[category] = [entry]
 
     template = Template(args.template.read_text()
                         if args.template is not None

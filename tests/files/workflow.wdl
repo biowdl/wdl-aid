@@ -21,4 +21,9 @@ workflow test {
         input1: "The first input"
         input2: "The second input"
     }
+    meta {
+        WDL_AID: {
+            exclude: ["echo.shouldBeExcluded"]
+        }
+    }
 }
