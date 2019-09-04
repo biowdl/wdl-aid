@@ -184,20 +184,18 @@ def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
     """
     out = {}
     if hasattr(node, "meta"):
-        merge_dict_of_lists(out, process_meta(node.meta, namespace))
+        out = merge_dict_of_lists(out, process_meta(node.meta, namespace))
     for el in node.body:
         if hasattr(el, "callee"):  # Calls
             if hasattr(el.callee, "body"):  # sub-workflow
-                merge_dict_of_lists(out, gather_meta(el.callee,
-                                                     "{}.{}".format(namespace,
-                                                                    el.name)))
+                out = merge_dict_of_lists(out, gather_meta(el.callee,
+                    "{}.{}".format(namespace, el.name)))
             else:  # Tasks
-                merge_dict_of_lists(out, process_meta(el.callee.meta,
-                                                      "{}.{}".format(namespace,
-                                                                     el.name)))
+                out = merge_dict_of_lists(out, process_meta(el.callee.meta,
+                    "{}.{}".format(namespace, el.name)))
         else:
             if hasattr(el, "body"):  # if or scatter
-                merge_dict_of_lists(out, gather_meta(el, namespace))
+                out = merge_dict_of_lists(out, gather_meta(el, namespace))
     return out
 
 
