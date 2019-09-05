@@ -28,6 +28,21 @@ import wdl_aid.wdl_aid as wa
 filesdir = Path(__file__).parent / Path("files")
 
 
+def test_drop_nones():
+    assert wa.drop_nones({1: 1, 2: 2, 3: None}) == {1: 1, 2: 2}
+
+
+def test_wrap_in_list():
+    assert wa.wrap_in_list(1) == [1]
+    assert wa.wrap_in_list([1]) == [1]
+
+
+def test_merge_dict_of_lists():
+    assert wa.merge_dict_of_lists(
+        {1: [1, 2], 2: [1,2]},
+        {1: [2, 3], 3: [1]}) == {1: [1, 2, 3], 2: [1, 2], 3: [1]}
+
+
 def test_fully_qualified_inputs():
     doc = WDL.load(str(filesdir / Path("workflow.wdl")))
     available_inputs = doc.workflow.available_inputs
@@ -59,6 +74,38 @@ def test_gather_parameter_meta():
                                    "desc": "alternative description",
                                    "cat": "common"}
                               }
+
+
+def test_process_meta():
+    meta = {"WDL_AID": {"exclude": ["A", "B"]},
+            "authors": ["A", "B"]}
+    assert wa.process_meta(meta, "trinket") == {
+        "exclude": ["trinket.A", "trinket.B"],
+        "authors": ["A", "B"]
+    }
+    meta2 = {"WDL_AID": {"exclude": ["A", "B"]},
+             "authors": "me! :3"}
+    assert wa.process_meta(meta2, "trinket") == {
+        "exclude": ["trinket.A", "trinket.B"],
+        "authors": ["me! :3"]
+    }
+
+
+def test_gather_meta():
+    doc = WDL.load(str(filesdir / Path("workflow.wdl")))
+    meta = wa.gather_meta(doc.workflow, doc.workflow.name)
+    assert meta == {
+        "exclude": ["test.echo.shouldBeExcluded"],
+        "authors": [{
+            "name": "Percy",
+            "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+            "organization": "Vox Machina"
+        }, {
+            "name": "'Caleb'",
+            "email": "c.widowghast@example.com",
+            "organization": "The Mighty Nein"
+        }]
+    }
 
 
 def test_get_description_defaults():
@@ -129,6 +176,76 @@ def test_get_category_fallback_category():
     assert wa.get_category(a_dict, "Vex", fallback_category="VM member") == "VM member"
     assert wa.get_category(a_dict, "Keyleth", fallback_category="VM member") == "VM member"
     assert wa.get_category(a_dict, "Grog", fallback_category="VM member") == "VM member"
+
+
+def test_gather_inputs():
+    doc = WDL.load(str(filesdir / Path("workflow.wdl")))
+    inputs, required_inputs = wa.gather_inputs(doc.workflow)
+    assert set(required_inputs) == set(["test.input1", "test.input2"])
+    for name, binding in inputs:
+        assert name in ['test.sw.workflowOptional',
+                        'test.echo.shouldBeExcluded',
+                        'test.echo.missingDescription',
+                        'test.echo.taskOptional',
+                        'test.input2',
+                        'test.input1']
+        assert isinstance(binding, WDL.Env.Binding)
+
+
+def test_collect_values():
+    doc = WDL.load(str(filesdir / Path("workflow.wdl")))
+    values = wa.collect_values(doc.workflow, True, "category", "other",
+                               "description", "...", False)
+    assert values == {
+        "workflow_name": "test",
+        "workflow_description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\"",
+        "workflow_authors": [{
+            "name": "Percy",
+            "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+            "organization": "Vox Machina"
+        }],
+        "workflow_all_authors": [{
+            "name": "Percy",
+            "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+            "organization": "Vox Machina"
+        }, {
+            "name": "'Caleb'",
+            "email": "c.widowghast@example.com",
+            "organization": "The Mighty Nein"
+        }],
+        "workflow_author": "Whomever",
+        "workflow_email": "whatever@where-ever.meh",
+        "excluded_inputs": ["test.echo.shouldBeExcluded"],
+        "wdl_aid_version": wa.__version__,
+        'other': [{
+            'default': 'None',
+            'description': '...',
+            'name': 'test.sw.workflowOptional',
+            'type': 'String?'
+        }, {
+            'default': 'None',
+            'description': '...',
+            'name': 'test.echo.missingDescription',
+            'type': 'String?'
+        }],
+        'required': [{
+            'default': 'None',
+            'description': '...',
+            'name': 'test.input2',
+            'type': 'String'
+        }, {
+            'default': 'None',
+            'description': '...',
+            'name': 'test.input1',
+            'type': 'String'
+        }],
+        'advanced': [{
+            'default': 'None',
+            'description': 'an optional input',
+            'name': 'test.echo.taskOptional',
+            'type': 'String?'
+        }]
+    }
 
 
 def test_main_defaults(capsys):

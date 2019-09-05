@@ -20,8 +20,8 @@
 
 import argparse
 from pathlib import Path
-from textwrap import dedent
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Tuple
+from pkg_resources import resource_string
 
 import WDL
 from jinja2 import Template
@@ -29,67 +29,44 @@ from jinja2 import Template
 from wdl_aid import __version__
 
 
-DEFAULT_TEMPLATE = dedent("""
-    # {{ workflow_name }}: Inputs
-    The following are all available inputs for `{{workflow_name}}`.
-
-    {% if required is defined %}
-    ## Required inputs
-    {% for ri in required -%}
-    <p name="{{ ri.name }}">
-        <b>{{ ri.name }}</b><br />
-        <i>{{ ri.type }} &mdash; Default: {{ ri.default }}</i><br />
-        {{ ri.description }}
-    </p>
-    {% endfor -%}
-    {% endif -%}
-
-    {% if common is defined %}
-    ## Other common inputs
-    {% for ci in common -%}
-    <p name="{{ ci.name }}">
-        <b>{{ ci.name }}</b><br />
-        <i>{{ ci.type }} &mdash; Default: {{ ci.default }}</i><br />
-        {{ ci.description }}
-    </p>
-    {% endfor -%}
-    {% endif -%}
-
-    {% if advanced is defined %}
-    ## Advanced inputs
-    <details>
-    <summary> Show/Hide </summary>
-    {% for ai in advanced -%}
-    <p name="{{ ai.name }}">
-        <b>{{ ai.name }}</b><br />
-        <i>{{ ai.type }} &mdash; Default: {{ ai.default }}</i><br />
-        {{ ai.description }}
-    </p>
-    {% endfor -%}
-    {% endif -%}
-
-    {% if other is defined %}
-    ## Other inputs
-    <details>
-    <summary> Show/Hide </summary>
-    {% for oi in other -%}
-    <p name="{{ oi.name }}">
-        <b>{{ oi.name }}</b><br />
-        <i>{{ oi.type }} &mdash; Default: {{ oi.default }}</i><br />
-        {{ oi.description }}
-    </p>
-    {% endfor -%}
-    {% endif -%}
-
-    </details>
-
-    > Generated using WDL AID ({{ wdl_aid_version }})
-
-    """)
+DEFAULT_TEMPLATE = resource_string("templates",
+                                   "default.md.j2").decode("utf-8")
 
 
+# Helper Functions
+def drop_nones(values: Dict) -> Dict:
+    return {k: values[k] for k in values if values[k] is not None}
+
+
+def wrap_in_list(x: Any) -> List:
+    if isinstance(x, list):
+        return x
+    else:
+        return [x]
+
+
+def merge_dict_of_lists(old: Dict[Any, List[Any]],
+                        new: Dict[Any, List[Any]]) -> Dict[Any, List[Any]]:
+    """
+    Given two dictionaries of lists merge these lists into a new dictionary.
+    :param old: The dictionary to add items to.
+    :param new: The dictionary with the items to add.
+    :return: old with the new items added
+    """
+    for key in new:
+        if key in old.keys():
+            for item in new[key]:
+                if item not in old[key]:
+                    old[key].append(item)
+        else:
+            old[key] = new[key][:]
+    return old
+
+
+# Data gathering functions
 def fully_qualified_inputs(inputs: WDL.Env.Bindings,
-                           namespace: str) -> (str, WDL.Decl):
+                           namespace: str) -> List[Tuple[str,
+                                                         WDL.Env.Binding]]:
     """
     :param inputs: A list of Bindings from a Namespace.
     :param namespace: The fully qualified name of the namespace.
@@ -118,8 +95,7 @@ def fully_qualified_parameter_meta(parameter_meta: Dict[str, Any],
 
 def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
                                       WDL.Scatter],
-                          namespace: str,
-                          ) -> Dict[str, Any]:
+                          namespace: str) -> Dict[str, Any]:
     """
     :param node: A node from a workflow.
     :param namespace: The node's fully qualified namespace name.
@@ -147,40 +123,33 @@ def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
     return out
 
 
-def process_meta(meta: Dict[str, Any], namespace: str):
+def process_meta(meta: Dict[str, Any], namespace: str) -> Dict:
     """
     :param meta: The meta object to be processed.
     :param namespace: The namespace to be added to the inputs mentioned
     exclude.
-    :return: A new dictionary with the exclude key.
-    TODO Maybe add author info and the like.
+    :return: A new dictionary with the exclude and authors keys.
     """
-    out = {"exclude": []}
-    try:
-        wdl_aid_meta = meta.get("WDL_AID")
-        for inp in wdl_aid_meta.get("exclude", []):
-            out["exclude"].append("{}.{}".format(namespace, inp))
-        return out
-    except AttributeError:
-        return out
-
-
-def merge_dict_of_lists(old: Dict[str, List[Any]], new: Dict[str, List[Any]]):
-    for key in new:
-        try:
-            old[key].append(new[key])
-        except KeyError:
-            old[key] = new[key]
-    return old
+    out = {
+        "exclude": [],
+        "authors": []
+    }
+    wdl_aid_meta = meta.get("WDL_AID", {})
+    for inp in wdl_aid_meta.get("exclude", []):
+        out["exclude"].append("{}.{}".format(namespace, inp))
+    out["authors"] = wrap_in_list(meta.get("authors", []))[:]
+    return out
 
 
 def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
-                            WDL.Scatter], namespace: str,) -> Dict[str, Any]:
+                            WDL.Scatter], namespace: str) -> Dict[str, Any]:
     """
     :param node: A node from a workflow.
     :param namespace: The node's fully qualified namespace name.
     :return: A dictionary with the WDL_AID recognized meta values:
         - "exclude": A list of inputs to be excluded.
+        - "authors": A list of all authors mentioned in any called
+          workflow or task.
     """
     out = {}
     if hasattr(node, "meta"):
@@ -202,7 +171,7 @@ def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
 def get_description(parameter_meta: dict, input_name: str,
                     description_key: str = "description",
                     fallback_description: str = "???",
-                    fallback_description_to_object: bool = False):
+                    fallback_description_to_object: bool = False) -> str:
     """
     :param parameter_meta: A dictionary containing the parameter_meta
     information.
@@ -232,7 +201,7 @@ def get_description(parameter_meta: dict, input_name: str,
 
 def get_category(parameter_meta: Any, input_name: str,
                  category_key: str = "category",
-                 fallback_category: str = "other"):
+                 fallback_category: str = "other") -> str:
     """
     :param parameter_meta: A dictionary containing the parameter_meta
     information.
@@ -249,6 +218,72 @@ def get_category(parameter_meta: Any, input_name: str,
                                                       fallback_category)
     except AttributeError:
         return fallback_category
+
+
+def gather_inputs(wf: WDL.Workflow) -> Tuple[List[Tuple[str, WDL.Env.Binding]],
+                                             List[str]]:
+    """
+    :param wf: The workflow for which the inputs are gathered.
+    :return: The inputs (names, input objects) and required inputs
+    (names).
+    """
+    inputs = fully_qualified_inputs(wf.available_inputs, wf.name)
+    required_inputs = fully_qualified_inputs(wf.required_inputs, wf.name)
+    required_inputs = [required_input[0] for required_input in required_inputs]
+    return inputs, required_inputs
+
+
+def collect_values(wf: WDL.Workflow, separate_required: bool,
+                   category_key: str, fallback_category: str,
+                   description_key: str, fallback_description: str,
+                   fallback_description_to_object: bool) -> Dict:
+    """
+    :param wf: The workflow for which the values will be retrieved.
+    :param separate_required: Whether or not to put required inputs in a
+    separate category.
+    :param category_key: The key used in parameter_meta for categories.
+    :param fallback_category: The default category.
+    :param description_key: The key used in parameter_meta for
+    descriptions.
+    :param fallback_description: The default description.
+    :param fallback_description_to_object: Whether or not the entire
+    object should be returned for a given object if the description
+    key is not found.
+    :return: The values.
+    """
+    inputs, required_inputs = gather_inputs(wf)
+    parameter_meta = gather_parameter_meta(wf, wf.name)
+    meta = gather_meta(wf, wf.name)
+    authors = wrap_in_list(wf.meta.get("authors", []))[:]
+    values = {"workflow_name": wf.name,
+              "workflow_description": wf.meta.get("description", None),
+              "workflow_authors": authors,
+              "workflow_all_authors": meta["authors"],
+              "workflow_author": wf.meta.get("author", None),
+              "workflow_email": wf.meta.get("email", None),
+              "excluded_inputs": meta["exclude"],
+              "wdl_aid_version": __version__}
+    for name, inp in inputs:
+        if name in meta["exclude"]:
+            continue
+        category = ("required"
+                    if name in required_inputs and separate_required
+                    else get_category(parameter_meta, name, category_key,
+                                      fallback_category))
+        entry = {
+            "name": name,
+            "type": str(inp.value.type),
+            "default": str(inp.value.expr),
+            "description":
+                get_description(parameter_meta, name, description_key,
+                                fallback_description,
+                                fallback_description_to_object)
+        }
+        try:
+            values[category].append(entry)
+        except KeyError:
+            values[category] = [entry]
+    return values
 
 
 def parse_args():
@@ -273,7 +308,8 @@ def parse_args():
                         default="description",
                         help="The key used in the parameter_meta section for "
                              "the input description. [description]")
-    parser.add_argument("--do-not-separate-required", action="store_true",
+    parser.add_argument("--do-not-separate-required", action="store_false",
+                        dest="separate_required",
                         help="Do not put required inputs into a separate "
                              "'required' category, but keep them in the. "
                              "category as noted in the parameter_meta "
@@ -295,50 +331,15 @@ def parse_args():
 def main():
     args = parse_args()
     doc = WDL.load(args.wdlfile)
-
     wf = doc.workflow
-    inputs = fully_qualified_inputs(wf.available_inputs, wf.name)
-    inputs = sorted(inputs, key=lambda i: i[0])
-
-    if args.do_not_separate_required:
-        required_inputs = []
-    else:
-        required_inputs = fully_qualified_inputs(wf.required_inputs, wf.name)
-        required_inputs = [required_input[0]
-                           for required_input in required_inputs]
-
-    parameter_meta = gather_parameter_meta(wf, wf.name)
-    meta = gather_meta(wf, wf.name)
-
-    values = {"workflow_name": wf.name, "wdl_aid_version": __version__}
-
-    for name, inp in inputs:
-        if name in meta["exclude"]:
-            continue
-        category = ("required"
-                    if name in required_inputs
-                    else get_category(parameter_meta, name,
-                                      args.category_key,
-                                      args.fallback_category))
-        entry = {
-            "name": name,
-            "type": inp.value.type,
-            "default": str(inp.value.expr),
-            "description":
-                get_description(parameter_meta, name, args.description_key,
-                                args.fallback_description,
-                                args.fallback_description_to_object)
-            }
-        try:
-            values[category].append(entry)
-        except KeyError:
-            values[category] = [entry]
-
+    values = collect_values(wf, args.separate_required, args.category_key,
+                            args.fallback_category, args.description_key,
+                            args.fallback_description,
+                            args.fallback_description_to_object)
     template = Template(args.template.read_text()
                         if args.template is not None
                         else DEFAULT_TEMPLATE)
-    file_content = template.render(values)
-
+    file_content = template.render(drop_nones(values))
     if args.output is not None:
         with args.output.open("w") as output:
             output.write(file_content)

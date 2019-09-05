@@ -4,12 +4,12 @@ parameter_meta information defined in the WDL file.
 
 ## usage
 ```
-usage: wdl_aid.py [-h] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
-                  [-d DESCRIPTION_KEY] [--do-not-separate-required]
-                  [--fallback-description-to-object]
-                  [--fallback-description FALLBACK_DESCRIPTION]
-                  [--fallback-category FALLBACK_CATEGORY]
-                  wdlfile
+usage: wdl-aid [-h] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
+               [-d DESCRIPTION_KEY] [--do-not-separate-required]
+               [--fallback-description-to-object]
+               [--fallback-description FALLBACK_DESCRIPTION]
+               [--fallback-category FALLBACK_CATEGORY]
+               wdlfile
 
 Generate documentation for a WDL workflow, based on the parameter_meta
 sections.
@@ -93,11 +93,33 @@ The default template contains supports the following categories:
 - advanced
 - other
 
+The default template contains support for the following meta fields:
+- description
+- authors: This is expected to be an object containing the following
+  fields for each author:
+  - name
+  - email (optional)
+  - organization (optional)
+- all_authors: See authors
+
 ## Custom templates
 A custom template can be provided using the `-t` option. This should be
 a Jinja2 template.
 The following variables are made available to the template:
 - `workflow_name`: The name of the workflow
+- `workflow_description`: The description of the workflow, directly
+  taken from the `description` field in the meta section.
+- `workflow_authors`: A list of author information, taken from the
+  `authors` field in the meta section.
+- `workflow_all_authors`: a list of author information taken from the
+  `authors` fields from the workflow and called sub-workflows and tasks.
+- `workflow_author`: The primary author of the workflow, directly taken
+  the `author` field in the meta section.
+- `workflow_email`: The primary email for contacting the developer(s),
+  directly taken from the `email` field in the meta section.
+- `excluded_inputs`: A list of fully-qualified inputs which will be
+  excluded from the rendering process (see
+  [Excluding inputs](#excluding-inputs)).
 - `wdl_aid_version`: The version of WDL-AID used
 - Per category a list of dictionaries. Each of these dictionaries will
   describe an input and contains the following keys:
