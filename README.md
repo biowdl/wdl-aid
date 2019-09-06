@@ -107,6 +107,9 @@ A custom template can be provided using the `-t` option. This should be
 a Jinja2 template.
 The following variables are made available to the template:
 - `workflow_name`: The name of the workflow
+- `workflow_file`: The path given as input to WDL-AID
+- `workflow_home`: Where the workflow code lives (eg. a github repo),
+  taken directly from the `home` field in the meta section.
 - `workflow_description`: The description of the workflow, directly
   taken from the `description` field in the meta section.
 - `workflow_authors`: A list of author information, taken from the

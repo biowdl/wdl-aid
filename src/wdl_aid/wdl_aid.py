@@ -259,6 +259,7 @@ def collect_values(wdlfile: str, separate_required: bool,
     authors = wrap_in_list(wf.meta.get("authors", []))[:]
     values = {"workflow_name": wf.name,
               "workflow_file": wdlfile,
+              "workflow_home": wf.meta.get("home", None),
               "workflow_description": wf.meta.get("description", None),
               "workflow_authors": authors,
               "workflow_all_authors": meta["authors"],
