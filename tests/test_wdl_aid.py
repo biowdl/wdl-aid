@@ -193,11 +193,12 @@ def test_gather_inputs():
 
 
 def test_collect_values():
-    doc = WDL.load(str(filesdir / Path("workflow.wdl")))
-    values = wa.collect_values(doc.workflow, True, "category", "other",
-                               "description", "...", False)
+    values = wa.collect_values(str(filesdir / Path("workflow.wdl")), True,
+                               "category", "other", "description", "...",
+                               False)
     assert values == {
         "workflow_name": "test",
+        "workflow_file": str(filesdir / Path("workflow.wdl")),
         "workflow_description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\"",
         "workflow_authors": [{
             "name": "Percy",

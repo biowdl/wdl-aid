@@ -233,12 +233,12 @@ def gather_inputs(wf: WDL.Workflow) -> Tuple[List[Tuple[str, WDL.Env.Binding]],
     return inputs, required_inputs
 
 
-def collect_values(wf: WDL.Workflow, separate_required: bool,
+def collect_values(wdlfile: str, separate_required: bool,
                    category_key: str, fallback_category: str,
                    description_key: str, fallback_description: str,
                    fallback_description_to_object: bool) -> Dict:
     """
-    :param wf: The workflow for which the values will be retrieved.
+    :param wdlfile: The workflow for which the values will be retrieved.
     :param separate_required: Whether or not to put required inputs in a
     separate category.
     :param category_key: The key used in parameter_meta for categories.
@@ -251,11 +251,14 @@ def collect_values(wf: WDL.Workflow, separate_required: bool,
     key is not found.
     :return: The values.
     """
+    doc = WDL.load(wdlfile)
+    wf = doc.workflow
     inputs, required_inputs = gather_inputs(wf)
     parameter_meta = gather_parameter_meta(wf, wf.name)
     meta = gather_meta(wf, wf.name)
     authors = wrap_in_list(wf.meta.get("authors", []))[:]
     values = {"workflow_name": wf.name,
+              "workflow_file": wdlfile,
               "workflow_description": wf.meta.get("description", None),
               "workflow_authors": authors,
               "workflow_all_authors": meta["authors"],
@@ -330,11 +333,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    doc = WDL.load(args.wdlfile)
-    wf = doc.workflow
-    values = collect_values(wf, args.separate_required, args.category_key,
-                            args.fallback_category, args.description_key,
-                            args.fallback_description,
+    values = collect_values(args.wdlfile, args.separate_required,
+                            args.category_key, args.fallback_category,
+                            args.description_key, args.fallback_description,
                             args.fallback_description_to_object)
     template = Template(args.template.read_text()
                         if args.template is not None
