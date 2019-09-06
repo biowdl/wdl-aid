@@ -12,6 +12,9 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
         <i>String? &mdash; Default: None</i><br />
         an optional input
 </p>
+</details>
+
+
 
 ### Other inputs
 <details>
@@ -37,6 +40,7 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
         ???
 </p>
 </details>
+
 
 ## Credits
 

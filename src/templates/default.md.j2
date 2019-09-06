@@ -36,7 +36,8 @@
         {{ ai.description }}
 </p>
 {% endfor -%}
-{% endif -%}
+</details>
+{% endif %}
 
 {% if other is defined %}
 ### Other inputs
@@ -49,9 +50,8 @@
         {{ oi.description }}
 </p>
 {% endfor -%}
-{% endif -%}
-
 </details>
+{% endif %}
 
 {% if workflow_authors|length != 0 or workflow_all_authors|length != 0 -%}
 ## Credits
