@@ -21,4 +21,15 @@ task echo {
                        desc: "alternative description",
                        cat: "common"}
     }
+    meta {
+        authors: [{
+            name: "Percy",
+            email: "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+            organization: "Vox Machina"
+        },{
+            name: "'Caleb'",
+            email: "c.widowghast@example.com",
+            organization: "The Mighty Nein"
+        }]
+    }
 }

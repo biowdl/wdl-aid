@@ -41,8 +41,9 @@ setup(name="WDL-AID",
       author="Leiden University Medical Center",
       author_email="sasc@lumc.nl",
       license="MIT",
-      packages=["wdl_aid"],
+      packages=["wdl_aid", "templates"],
       package_dir={'': 'src'},
+      package_data={'': ["*.j2"]},
       install_requires=[
         "miniwdl>=0.4.0",
         "jinja2"
