@@ -46,22 +46,22 @@ def wrap_in_list(x: Any) -> List:
         return [x]
 
 
-def merge_dict_of_lists(old: Dict[Any, List[Any]],
-                        new: Dict[Any, List[Any]]) -> Dict[Any, List[Any]]:
+def merge_dict_of_lists(original_dict: Dict[Any, List[Any]],
+                        values_to_add: Dict[Any, List[Any]]) -> Dict[Any, List[Any]]:
     """
     Given two dictionaries of lists merge these lists into a new dictionary.
-    :param old: The dictionary to add items to.
-    :param new: The dictionary with the items to add.
+    :param original_dict: The dictionary to add items to.
+    :param values_to_add: The dictionary with the items to add.
     :return: old with the new items added
     """
-    for key in new:
-        if key in old.keys():
-            for item in new[key]:
-                if item not in old[key]:
-                    old[key].append(item)
+    for key in values_to_add:
+        if key in original_dict.keys():
+            for item in values_to_add[key]:
+                if item not in original_dict[key]:
+                    original_dict[key].append(item)
         else:
-            old[key] = new[key][:]
-    return old
+            original_dict[key] = values_to_add[key][:]
+    return original_dict
 
 
 # Data gathering functions
@@ -74,10 +74,10 @@ def fully_qualified_inputs(inputs: WDL.Env.Bindings,
     :return: A list of tuples containing the fully qualified input name
     and the input Decl.
     """
-    out = []
+    qualified_names = []
     for inp in inputs:
-        out.append((f"{namespace}.{inp.name}", inp))
-    return out
+        qualified_names.append((f"{namespace}.{inp.name}", inp))
+    return qualified_names
 
 
 def fully_qualified_parameter_meta(parameter_meta: Dict[str, Any],
@@ -88,10 +88,10 @@ def fully_qualified_parameter_meta(parameter_meta: Dict[str, Any],
     :return: The parameter_meta dictionary with fully qualified names
     as keys.
     """
-    out = {}
+    qualified_parameter_meta = {}
     for key in parameter_meta:
-        out[f"{namespace}.{key}"] = parameter_meta[key]
-    return out
+        qualified_parameter_meta[f"{namespace}.{key}"] = parameter_meta[key]
+    return qualified_parameter_meta
 
 
 def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
@@ -103,24 +103,26 @@ def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
     :return: A dictionary with all the parameter meta values, using
     fully qualified namespaces as keys.
     """
-    out = {}
+    all_parameter_meta = {}
     if hasattr(node, "parameter_meta"):
-        out.update(fully_qualified_parameter_meta(node.parameter_meta,
-                                                  namespace))
+        all_parameter_meta.update(fully_qualified_parameter_meta(
+            node.parameter_meta, namespace))
 
-    for el in node.body:
-        if hasattr(el, "callee"):  # Calls
-            if hasattr(el.callee, "body"):  # sub-workflow
-                out.update(gather_parameter_meta(el.callee,
-                                                 f"{namespace}.{el.name}"))
+    for element in node.body:
+        if isinstance(element, WDL.Tree.Call):
+            if isinstance(element.callee, WDL.Tree.Workflow):
+                all_parameter_meta.update(gather_parameter_meta(
+                    element.callee, f"{namespace}.{element.name}"))
             else:  # Tasks
-                out.update(
-                    fully_qualified_parameter_meta(el.callee.parameter_meta,
-                                                   f"{namespace}.{el.name}"))
+                all_parameter_meta.update(fully_qualified_parameter_meta(
+                    element.callee.parameter_meta,
+                    f"{namespace}.{element.name}"))
         else:
-            if hasattr(el, "body"):  # if or scatter
-                out.update(gather_parameter_meta(el, namespace))
-    return out
+            if isinstance(element, WDL.Tree.Conditional) or isinstance(
+                    element, WDL.Tree.Scatter):
+                all_parameter_meta.update(
+                    gather_parameter_meta(element, namespace))
+    return all_parameter_meta
 
 
 def process_meta(meta: Dict[str, Any], namespace: str) -> Dict:
@@ -130,15 +132,17 @@ def process_meta(meta: Dict[str, Any], namespace: str) -> Dict:
     exclude.
     :return: A new dictionary with the exclude and authors keys.
     """
-    out = {
+    reformatted_meta = {
         "exclude": [],
         "authors": []
     }
+
     wdl_aid_meta = meta.get("WDL_AID", {})
     for inp in wdl_aid_meta.get("exclude", []):
-        out["exclude"].append(f"{namespace}.{inp}")
-    out["authors"] = wrap_in_list(meta.get("authors", []))[:]
-    return out
+        reformatted_meta["exclude"].append(f"{namespace}.{inp}")
+
+    reformatted_meta["authors"] = wrap_in_list(meta.get("authors", []))[:]
+    return reformatted_meta
 
 
 def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
@@ -151,21 +155,26 @@ def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
         - "authors": A list of all authors mentioned in any called
           workflow or task.
     """
-    out = {}
+    collected_meta = {}
     if hasattr(node, "meta"):
-        out = merge_dict_of_lists(out, process_meta(node.meta, namespace))
-    for el in node.body:
-        if hasattr(el, "callee"):  # Calls
-            if hasattr(el.callee, "body"):  # sub-workflow
-                out = merge_dict_of_lists(out, gather_meta(
-                    el.callee, f"{namespace}.{el.name}"))
+        collected_meta = merge_dict_of_lists(collected_meta, process_meta(
+            node.meta, namespace))
+    for element in node.body:
+        if isinstance(element, WDL.Tree.Call):
+            if isinstance(element.callee, WDL.Tree.Workflow):
+                collected_meta = merge_dict_of_lists(
+                    collected_meta, gather_meta(
+                        element.callee, f"{namespace}.{element.name}"))
             else:  # Tasks
-                out = merge_dict_of_lists(out, process_meta(
-                    el.callee.meta, f"{namespace}.{el.name}"))
+                collected_meta = merge_dict_of_lists(
+                    collected_meta, process_meta(
+                        element.callee.meta, f"{namespace}.{element.name}"))
         else:
-            if hasattr(el, "body"):  # if or scatter
-                out = merge_dict_of_lists(out, gather_meta(el, namespace))
-    return out
+            if isinstance(element, WDL.Tree.Conditional) or isinstance(
+                    element, WDL.Tree.Scatter):
+                collected_meta = merge_dict_of_lists(
+                    collected_meta, gather_meta(element, namespace))
+    return collected_meta
 
 
 def get_description(parameter_meta: dict, input_name: str,
@@ -220,15 +229,15 @@ def get_category(parameter_meta: Any, input_name: str,
         return fallback_category
 
 
-def gather_inputs(wf: WDL.Workflow) -> Tuple[List[Tuple[str, WDL.Env.Binding]],
-                                             List[str]]:
+def gather_inputs(workflow: WDL.Workflow
+                  ) -> Tuple[List[Tuple[str, WDL.Env.Binding]], List[str]]:
     """
-    :param wf: The workflow for which the inputs are gathered.
+    :param workflow: The workflow for which the inputs are gathered.
     :return: The inputs (names, input objects) and required inputs
     (names).
     """
-    inputs = fully_qualified_inputs(wf.available_inputs, wf.name)
-    required_inputs = fully_qualified_inputs(wf.required_inputs, wf.name)
+    inputs = fully_qualified_inputs(workflow.available_inputs, workflow.name)
+    required_inputs = fully_qualified_inputs(workflow.required_inputs, workflow.name)
     required_inputs = [required_input[0] for required_input in required_inputs]
     return inputs, required_inputs
 
@@ -251,17 +260,17 @@ def collect_values(wdlfile: str, separate_required: bool,
     key is not found.
     :return: The values.
     """
-    doc = WDL.load(wdlfile)
-    wf = doc.workflow
-    inputs, required_inputs = gather_inputs(wf)
-    parameter_meta = gather_parameter_meta(wf, wf.name)
-    gathered_meta = gather_meta(wf, wf.name)
-    authors = wrap_in_list(wf.meta.get("authors", []))[:]
-    values = {"workflow_name": wf.name,
+    document = WDL.load(wdlfile)
+    workflow = document.workflow
+    inputs, required_inputs = gather_inputs(workflow)
+    parameter_meta = gather_parameter_meta(workflow, workflow.name)
+    gathered_meta = gather_meta(workflow, workflow.name)
+    authors = wrap_in_list(workflow.meta.get("authors", []))[:]
+    values = {"workflow_name": workflow.name,
               "workflow_file": wdlfile,
               "workflow_authors": authors,
               "workflow_all_authors": gathered_meta["authors"],
-              "workflow_meta": wf.meta,
+              "workflow_meta": workflow.meta,
               "excluded_inputs": gathered_meta["exclude"],
               "wdl_aid_version": __version__}
     for name, inp in inputs:
