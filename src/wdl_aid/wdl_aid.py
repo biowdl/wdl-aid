@@ -47,7 +47,8 @@ def wrap_in_list(x: Any) -> List:
 
 
 def merge_dict_of_lists(original_dict: Dict[Any, List[Any]],
-                        values_to_add: Dict[Any, List[Any]]) -> Dict[Any, List[Any]]:
+                        values_to_add: Dict[Any, List[Any]]
+                        ) -> Dict[Any, List[Any]]:
     """
     Given two dictionaries of lists merge these lists into a new dictionary.
     :param original_dict: The dictionary to add items to.
@@ -237,7 +238,8 @@ def gather_inputs(workflow: WDL.Workflow
     (names).
     """
     inputs = fully_qualified_inputs(workflow.available_inputs, workflow.name)
-    required_inputs = fully_qualified_inputs(workflow.required_inputs, workflow.name)
+    required_inputs = fully_qualified_inputs(workflow.required_inputs,
+                                             workflow.name)
     required_inputs = [required_input[0] for required_input in required_inputs]
     return inputs, required_inputs
 
