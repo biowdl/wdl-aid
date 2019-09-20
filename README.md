@@ -4,11 +4,11 @@ parameter_meta information defined in the WDL file.
 
 ## usage
 ```
-usage: wdl-aid [-h] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
+usage: wdl-aid [-h] [-v] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
                [-d DESCRIPTION_KEY] [--do-not-separate-required]
                [--fallback-description-to-object]
                [--fallback-description FALLBACK_DESCRIPTION]
-               [--fallback-category FALLBACK_CATEGORY]
+               [--fallback-category FALLBACK_CATEGORY] [-e EXTRA]
                wdlfile
 
 Generate documentation for a WDL workflow, based on the parameter_meta
@@ -19,6 +19,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
   -o OUTPUT, --output OUTPUT
                         The file to write the generated documentation to.
   -t TEMPLATE, --template TEMPLATE
@@ -44,6 +45,10 @@ optional arguments:
   --fallback-category FALLBACK_CATEGORY
                         The fallback value for when no category is defined for
                         a given input. [other]
+  -e EXTRA, --extra EXTRA
+                        A JSON file with additional data to be passed to the
+                        jinja2 rendering engine. These values will be made
+                        available under the 'extra' variable.
 ```
 
 ## Preparing your WDL file
@@ -126,3 +131,5 @@ The following variables are made available to the template:
     default, then `None`.
   - `description`: The description of the input as specified in the
     parameter_meta sections in the WDL file(s).
+- `extra`: Whatever value is contained within the JSON file
+  provided though the `-e` option, otherwise `None`.

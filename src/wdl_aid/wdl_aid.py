@@ -300,6 +300,8 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate documentation for a WDL workflow, based on "
                     "the parameter_meta sections.")
+    parser.add_argument("-v", "--version", action="version",
+                        version=f"WDL-AID {__version__}")
     parser.add_argument("wdlfile", type=str,
                         help="The WDL the documentation should be generated "
                              "for.")
@@ -340,8 +342,6 @@ def parse_args():
                              "to the jinja2 rendering engine. These values "
                              "will be made available under the 'extra' "
                              "variable.")
-    parser.add_argument("-v", "--version", action="version",
-                        version=f"WDL-AID {__version__}")
     return parser.parse_args()
 
 
