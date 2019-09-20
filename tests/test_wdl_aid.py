@@ -199,8 +199,6 @@ def test_collect_values():
     assert values == {
         "workflow_name": "test",
         "workflow_file": str(filesdir / Path("workflow.wdl")),
-        "workflow_home": None,
-        "workflow_description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\"",
         "workflow_authors": [{
             "name": "Percy",
             "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
@@ -215,8 +213,19 @@ def test_collect_values():
             "email": "c.widowghast@example.com",
             "organization": "The Mighty Nein"
         }],
-        "workflow_author": "Whomever",
-        "workflow_email": "whatever@where-ever.meh",
+        "workflow_meta": {
+            "WDL_AID": {
+                "exclude": ["echo.shouldBeExcluded"]
+            },
+            "authors": {
+                "name": "Percy",
+                "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+                "organization": "Vox Machina"
+            },
+            "author": "Whomever",
+            "email": "whatever@where-ever.meh",
+            "description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\""
+        },
         "excluded_inputs": ["test.echo.shouldBeExcluded"],
         "wdl_aid_version": wa.__version__,
         'other': [{
@@ -254,8 +263,8 @@ def test_main_defaults(capsys):
     sys.argv = ["script", str(filesdir / Path("workflow.wdl"))]
     wa.main()
     captured = capsys.readouterr().out.splitlines(True)
-    with (filesdir / Path("expected.md")).open("r") as expected_ouput:
-        expected = expected_ouput.readlines()[:-1]
+    with (filesdir / Path("expected.md")).open("r") as expected_output:
+        expected = expected_output.readlines()[:-1]
     assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
@@ -264,8 +273,8 @@ def test_main_no_required(capsys):
                 "--do-not-separate-required"]
     wa.main()
     captured = capsys.readouterr().out.splitlines(True)
-    with (filesdir / Path("expected_no_required.md")).open("r") as expected_ouput:
-        expected = expected_ouput.readlines()[:-1]
+    with (filesdir / Path("expected_no_required.md")).open("r") as expected_output:
+        expected = expected_output.readlines()[:-1]
     assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
@@ -274,8 +283,8 @@ def test_main_keys(capsys):
                 "--description-key", "desc", "--category-key", "cat"]
     wa.main()
     captured = capsys.readouterr().out.splitlines(True)
-    with (filesdir / Path("expected_keys.md")).open("r") as expected_ouput:
-        expected = expected_ouput.readlines()[:-1]
+    with (filesdir / Path("expected_keys.md")).open("r") as expected_output:
+        expected = expected_output.readlines()[:-1]
     assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
@@ -286,8 +295,8 @@ def test_main_fallback(capsys):
                 "--fallback-description-to-object"]
     wa.main()
     captured = capsys.readouterr().out.splitlines(True)
-    with (filesdir / Path("expected_fallback.md")).open("r") as expected_ouput:
-        expected = expected_ouput.readlines()[:-1]
+    with (filesdir / Path("expected_fallback.md")).open("r") as expected_output:
+        expected = expected_output.readlines()[:-1]
     assert captured == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
 
 
@@ -296,8 +305,8 @@ def test_main_template(capsys):
                 "--template", str(filesdir / Path("test.template"))]
     wa.main()
     captured = capsys.readouterr()
-    with (filesdir / Path("test.template")).open("r") as expected_ouput:
-        expected = expected_ouput.read()
+    with (filesdir / Path("test.template")).open("r") as expected_output:
+        expected = expected_output.read()
     assert captured.out == expected
 
 
@@ -308,6 +317,17 @@ def test_main_output(tmpdir):
     wa.main()
     with output_file.open() as out_file:
         result = out_file.readlines()
-    with (filesdir / Path("expected.md")).open("r") as expected_ouput:
-        expected = expected_ouput.readlines()[:-1]
+    with (filesdir / Path("expected.md")).open("r") as expected_output:
+        expected = expected_output.readlines()[:-1]
     assert result == expected + ["> Generated using WDL AID ({})\n".format(wa.__version__)]
+
+
+def test_main_extra(capsys):
+    sys.argv = ["script", str(filesdir / Path("workflow.wdl")),
+                "-t", str(filesdir / Path("extra.template")),
+                "-e", str(filesdir / Path("extra.json"))]
+    wa.main()
+    captured = capsys.readouterr()
+    with (filesdir / Path("extra.json")).open("r") as expected_output:
+        expected = expected_output.read()
+    assert captured.out == expected

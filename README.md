@@ -100,35 +100,28 @@ The default template contains support for the following meta fields:
   - name
   - email (optional)
   - organization (optional)
-- all_authors: See authors
 
 ## Custom templates
 A custom template can be provided using the `-t` option. This should be
 a Jinja2 template.
 The following variables are made available to the template:
-- `workflow_name`: The name of the workflow
-- `workflow_file`: The path given as input to WDL-AID
-- `workflow_home`: Where the workflow code lives (eg. a github repo),
-  taken directly from the `home` field in the meta section.
-- `workflow_description`: The description of the workflow, directly
-  taken from the `description` field in the meta section.
+- `workflow_name`: The name of the workflow.
+- `workflow_file`: The path given as input to WDL-AID.
 - `workflow_authors`: A list of author information, taken from the
-  `authors` field in the meta section.
-- `workflow_all_authors`: a list of author information taken from the
+  `authors` field in the meta section. If this field does not contain
+  a list its value will be wrapped in one.
+- `workflow_all_authors`: A list of author information taken from the
   `authors` fields from the workflow and called sub-workflows and tasks.
-- `workflow_author`: The primary author of the workflow, directly taken
-  the `author` field in the meta section.
-- `workflow_email`: The primary email for contacting the developer(s),
-  directly taken from the `email` field in the meta section.
+- `workflow_meta`: A direct copy of the workflow's meta section.
 - `excluded_inputs`: A list of fully-qualified inputs which will be
   excluded from the rendering process (see
   [Excluding inputs](#excluding-inputs)).
 - `wdl_aid_version`: The version of WDL-AID used
 - Per category a list of dictionaries. Each of these dictionaries will
   describe an input and contains the following keys:
-  - `name`: The (fully qualified) name of the input
+  - `name`: The (fully qualified) name of the input.
   - `type`: The WDL value type of the input (eg. `String?` or 
-    `Pair[Int, Boolean]`)
+    `Pair[Int, Boolean]`).
   - `default`: The default value of the input. If an input has no
     default, then `None`.
   - `description`: The description of the input as specified in the

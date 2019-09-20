@@ -22,6 +22,7 @@ import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Union, Tuple
 from pkg_resources import resource_string
+import json
 
 import WDL
 from jinja2 import Template
@@ -75,7 +76,7 @@ def fully_qualified_inputs(inputs: WDL.Env.Bindings,
     """
     out = []
     for inp in inputs:
-        out.append(("{}.{}".format(namespace, inp.name), inp))
+        out.append((f"{namespace}.{inp.name}", inp))
     return out
 
 
@@ -89,7 +90,7 @@ def fully_qualified_parameter_meta(parameter_meta: Dict[str, Any],
     """
     out = {}
     for key in parameter_meta:
-        out["{}.{}".format(namespace, key)] = parameter_meta[key]
+        out[f"{namespace}.{key}"] = parameter_meta[key]
     return out
 
 
@@ -110,13 +111,12 @@ def gather_parameter_meta(node: Union[WDL.Workflow, WDL.Conditional,
     for el in node.body:
         if hasattr(el, "callee"):  # Calls
             if hasattr(el.callee, "body"):  # sub-workflow
-                out.update(gather_parameter_meta(el.callee, "{}.{}".format(
-                    namespace, el.name)))
+                out.update(gather_parameter_meta(el.callee,
+                                                 f"{namespace}.{el.name}"))
             else:  # Tasks
                 out.update(
                     fully_qualified_parameter_meta(el.callee.parameter_meta,
-                                                   "{}.{}".format(namespace,
-                                                                  el.name)))
+                                                   f"{namespace}.{el.name}"))
         else:
             if hasattr(el, "body"):  # if or scatter
                 out.update(gather_parameter_meta(el, namespace))
@@ -136,7 +136,7 @@ def process_meta(meta: Dict[str, Any], namespace: str) -> Dict:
     }
     wdl_aid_meta = meta.get("WDL_AID", {})
     for inp in wdl_aid_meta.get("exclude", []):
-        out["exclude"].append("{}.{}".format(namespace, inp))
+        out["exclude"].append(f"{namespace}.{inp}")
     out["authors"] = wrap_in_list(meta.get("authors", []))[:]
     return out
 
@@ -158,10 +158,10 @@ def gather_meta(node: Union[WDL.Workflow, WDL.Conditional,
         if hasattr(el, "callee"):  # Calls
             if hasattr(el.callee, "body"):  # sub-workflow
                 out = merge_dict_of_lists(out, gather_meta(
-                    el.callee, "{}.{}".format(namespace, el.name)))
+                    el.callee, f"{namespace}.{el.name}"))
             else:  # Tasks
                 out = merge_dict_of_lists(out, process_meta(
-                    el.callee.meta, "{}.{}".format(namespace, el.name)))
+                    el.callee.meta, f"{namespace}.{el.name}"))
         else:
             if hasattr(el, "body"):  # if or scatter
                 out = merge_dict_of_lists(out, gather_meta(el, namespace))
@@ -255,20 +255,17 @@ def collect_values(wdlfile: str, separate_required: bool,
     wf = doc.workflow
     inputs, required_inputs = gather_inputs(wf)
     parameter_meta = gather_parameter_meta(wf, wf.name)
-    meta = gather_meta(wf, wf.name)
+    gathered_meta = gather_meta(wf, wf.name)
     authors = wrap_in_list(wf.meta.get("authors", []))[:]
     values = {"workflow_name": wf.name,
               "workflow_file": wdlfile,
-              "workflow_home": wf.meta.get("home", None),
-              "workflow_description": wf.meta.get("description", None),
               "workflow_authors": authors,
-              "workflow_all_authors": meta["authors"],
-              "workflow_author": wf.meta.get("author", None),
-              "workflow_email": wf.meta.get("email", None),
-              "excluded_inputs": meta["exclude"],
+              "workflow_all_authors": gathered_meta["authors"],
+              "workflow_meta": wf.meta,
+              "excluded_inputs": gathered_meta["exclude"],
               "wdl_aid_version": __version__}
     for name, inp in inputs:
-        if name in meta["exclude"]:
+        if name in gathered_meta["exclude"]:
             continue
         category = ("required"
                     if name in required_inputs and separate_required
@@ -329,6 +326,13 @@ def parse_args():
     parser.add_argument("--fallback-category", type=str, default="other",
                         help="The fallback value for when no category is "
                              "defined for a given input. [other]")
+    parser.add_argument("-e", "--extra", type=Path,
+                        help="A JSON file with additional data to be passed "
+                             "to the jinja2 rendering engine. These values "
+                             "will be made available under the 'extra' "
+                             "variable.")
+    parser.add_argument("-v", "--version", action="version",
+                        version=f"WDL-AID {__version__}")
     return parser.parse_args()
 
 
@@ -341,7 +345,14 @@ def main():
     template = Template(args.template.read_text()
                         if args.template is not None
                         else DEFAULT_TEMPLATE)
-    file_content = template.render(drop_nones(values))
+
+    if args.extra is not None:
+        with args.extra.open("r") as extra_values_file:
+            extra_values = json.load(extra_values_file)
+    else:
+        extra_values = None
+
+    file_content = template.render(drop_nones(values), extra=extra_values)
     if args.output is not None:
         with args.output.open("w") as output:
             output.write(file_content)
