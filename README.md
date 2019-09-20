@@ -4,11 +4,11 @@ parameter_meta information defined in the WDL file.
 
 ## usage
 ```
-usage: wdl-aid [-h] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
+usage: wdl-aid [-h] [-v] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
                [-d DESCRIPTION_KEY] [--do-not-separate-required]
                [--fallback-description-to-object]
                [--fallback-description FALLBACK_DESCRIPTION]
-               [--fallback-category FALLBACK_CATEGORY]
+               [--fallback-category FALLBACK_CATEGORY] [-e EXTRA]
                wdlfile
 
 Generate documentation for a WDL workflow, based on the parameter_meta
@@ -19,6 +19,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
   -o OUTPUT, --output OUTPUT
                         The file to write the generated documentation to.
   -t TEMPLATE, --template TEMPLATE
@@ -44,6 +45,10 @@ optional arguments:
   --fallback-category FALLBACK_CATEGORY
                         The fallback value for when no category is defined for
                         a given input. [other]
+  -e EXTRA, --extra EXTRA
+                        A JSON file with additional data to be passed to the
+                        jinja2 rendering engine. These values will be made
+                        available under the 'extra' variable.
 ```
 
 ## Preparing your WDL file
@@ -100,36 +105,31 @@ The default template contains support for the following meta fields:
   - name
   - email (optional)
   - organization (optional)
-- all_authors: See authors
 
 ## Custom templates
 A custom template can be provided using the `-t` option. This should be
 a Jinja2 template.
 The following variables are made available to the template:
-- `workflow_name`: The name of the workflow
-- `workflow_file`: The path given as input to WDL-AID
-- `workflow_home`: Where the workflow code lives (eg. a github repo),
-  taken directly from the `home` field in the meta section.
-- `workflow_description`: The description of the workflow, directly
-  taken from the `description` field in the meta section.
+- `workflow_name`: The name of the workflow.
+- `workflow_file`: The path given as input to WDL-AID.
 - `workflow_authors`: A list of author information, taken from the
-  `authors` field in the meta section.
-- `workflow_all_authors`: a list of author information taken from the
+  `authors` field in the meta section. If this field does not contain
+  a list its value will be wrapped in one.
+- `workflow_all_authors`: A list of author information taken from the
   `authors` fields from the workflow and called sub-workflows and tasks.
-- `workflow_author`: The primary author of the workflow, directly taken
-  the `author` field in the meta section.
-- `workflow_email`: The primary email for contacting the developer(s),
-  directly taken from the `email` field in the meta section.
+- `workflow_meta`: A direct copy of the workflow's meta section.
 - `excluded_inputs`: A list of fully-qualified inputs which will be
   excluded from the rendering process (see
   [Excluding inputs](#excluding-inputs)).
 - `wdl_aid_version`: The version of WDL-AID used
 - Per category a list of dictionaries. Each of these dictionaries will
   describe an input and contains the following keys:
-  - `name`: The (fully qualified) name of the input
+  - `name`: The (fully qualified) name of the input.
   - `type`: The WDL value type of the input (eg. `String?` or 
-    `Pair[Int, Boolean]`)
+    `Pair[Int, Boolean]`).
   - `default`: The default value of the input. If an input has no
     default, then `None`.
   - `description`: The description of the input as specified in the
     parameter_meta sections in the WDL file(s).
+- `extra`: Whatever value is contained within the JSON file
+  provided though the `-e` option, otherwise `None`.
