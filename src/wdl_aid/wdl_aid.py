@@ -302,7 +302,7 @@ def collect_values(wdlfile: str, separate_required: bool,
             values[category].append(entry)
         except KeyError:
             values[category] = [entry]
-    if strict:
+    if strict and len(missing_parameter_meta) > 0:
         missed_inputs = "\n".join(missing_parameter_meta)
         raise ValueError(
             f"Missing parameter_meta for inputs:\n{missed_inputs}")
