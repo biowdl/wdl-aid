@@ -247,7 +247,8 @@ def gather_inputs(workflow: WDL.Workflow
 def collect_values(wdlfile: str, separate_required: bool,
                    category_key: str, fallback_category: str,
                    description_key: str, fallback_description: str,
-                   fallback_description_to_object: bool) -> Dict:
+                   fallback_description_to_object: bool,
+                   strict: bool) -> Dict:
     """
     :param wdlfile: The workflow for which the values will be retrieved.
     :param separate_required: Whether or not to put required inputs in a
@@ -260,6 +261,8 @@ def collect_values(wdlfile: str, separate_required: bool,
     :param fallback_description_to_object: Whether or not the entire
     object should be returned for a given object if the description
     key is not found.
+    :param strict: When true, raise a ValueError if no parameter_meta is
+    available for the input.
     :return: The values.
     """
     document = WDL.load(wdlfile)
@@ -275,9 +278,13 @@ def collect_values(wdlfile: str, separate_required: bool,
               "workflow_meta": workflow.meta,
               "excluded_inputs": gathered_meta["exclude"],
               "wdl_aid_version": __version__}
+
+    missing_parameter_meta = []
     for name, inp in inputs:
         if name in gathered_meta["exclude"]:
             continue
+        if name not in parameter_meta:
+            missing_parameter_meta.append(name)
         category = ("required"
                     if name in required_inputs and separate_required
                     else get_category(parameter_meta, name, category_key,
@@ -295,6 +302,10 @@ def collect_values(wdlfile: str, separate_required: bool,
             values[category].append(entry)
         except KeyError:
             values[category] = [entry]
+    if strict:
+        missed_inputs = "\n".join(missing_parameter_meta)
+        raise ValueError(
+            f"Missing parameter_meta for inputs:\n{missed_inputs}")
     return values
 
 
@@ -344,6 +355,9 @@ def parse_args():
                              "to the jinja2 rendering engine. These values "
                              "will be made available under the 'extra' "
                              "variable.")
+    parser.add_argument("--strict", action="store_true",
+                        help="Error if the parameter_meta entry is missing "
+                             "for any inputs.")
     return parser.parse_args()
 
 
@@ -352,7 +366,7 @@ def main():
     values = collect_values(args.wdlfile, args.separate_required,
                             args.category_key, args.fallback_category,
                             args.description_key, args.fallback_description,
-                            args.fallback_description_to_object)
+                            args.fallback_description_to_object, args.strict)
     template = Template(args.template.read_text()
                         if args.template is not None
                         else DEFAULT_TEMPLATE)
