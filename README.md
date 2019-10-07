@@ -8,7 +8,7 @@ usage: wdl-aid [-h] [-v] [-o OUTPUT] [-t TEMPLATE] [-c CATEGORY_KEY]
                [-d DESCRIPTION_KEY] [--do-not-separate-required]
                [--fallback-description-to-object]
                [--fallback-description FALLBACK_DESCRIPTION]
-               [--fallback-category FALLBACK_CATEGORY] [-e EXTRA]
+               [--fallback-category FALLBACK_CATEGORY] [-e EXTRA] [--strict]
                wdlfile
 
 Generate documentation for a WDL workflow, based on the parameter_meta
@@ -49,6 +49,8 @@ optional arguments:
                         A JSON file with additional data to be passed to the
                         jinja2 rendering engine. These values will be made
                         available under the 'extra' variable.
+  --strict              Error if the parameter_meta entry is missing for any
+                        inputs.
 ```
 
 ## Preparing your WDL file

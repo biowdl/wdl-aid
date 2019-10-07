@@ -21,6 +21,7 @@
 import sys
 from pathlib import Path
 
+import pytest
 import WDL
 
 import wdl_aid.wdl_aid as wa
@@ -195,7 +196,7 @@ def test_gather_inputs():
 def test_collect_values():
     values = wa.collect_values(str(filesdir / Path("workflow.wdl")), True,
                                "category", "other", "description", "...",
-                               False)
+                               False, False)
     assert values == {
         "workflow_name": "test",
         "workflow_file": str(filesdir / Path("workflow.wdl")),
@@ -257,6 +258,13 @@ def test_collect_values():
             'type': 'String?'
         }]
     }
+
+
+def test_collect_values_strict():
+    with pytest.raises(ValueError):
+        values = wa.collect_values(str(filesdir / Path("workflow.wdl")), True,
+                                   "category", "other", "description", "...",
+                                   False, True)
 
 
 def test_main_defaults(capsys):
@@ -331,3 +339,9 @@ def test_main_extra(capsys):
     with (filesdir / Path("extra.json")).open("r") as expected_output:
         expected = expected_output.read()
     assert captured.out == expected
+
+
+def test_main_strict():
+    sys.argv = ["script", str(filesdir / Path("workflow.wdl")), "--strict"]
+    with pytest.raises(ValueError):
+        wa.main()
