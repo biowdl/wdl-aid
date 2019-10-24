@@ -336,7 +336,7 @@ def parse_args():
     parser.add_argument("--do-not-separate-required", action="store_false",
                         dest="separate_required",
                         help="Do not put required inputs into a separate "
-                             "'required' category, but keep them in the. "
+                             "'required' category, but keep them in the "
                              "category as noted in the parameter_meta "
                              "sections.")
     parser.add_argument("--fallback-description-to-object",

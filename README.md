@@ -34,7 +34,7 @@ optional arguments:
                         input description. [description]
   --do-not-separate-required
                         Do not put required inputs into a separate 'required'
-                        category, but keep them in the. category as noted in
+                        category, but keep them in the category as noted in
                         the parameter_meta sections.
   --fallback-description-to-object
                         Use the entire parameter_meta object as description if
