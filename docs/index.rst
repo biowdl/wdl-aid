@@ -31,7 +31,7 @@ Installation
 
 WDL-AID can be installed using:
 
-.. code-block::
+.. code-block:: bash
 
    pip install wdl-aid
 
@@ -42,7 +42,7 @@ Running WDL-AID requires the following steps:
 1. Add parameter_meta_ sections to you tasks and workflows.
    These should be objects containing both a description and category:
 
-   .. code-block::
+   .. code-block:: javascript
 
       parameter_meta {
           input_name: {
@@ -62,7 +62,7 @@ Running WDL-AID requires the following steps:
 
 2. Once installed, WDL-AID can be run using the following command:
 
-   .. code-block::
+   .. code-block:: bash
 
       wdl-aid <workflow.wdl> -o docs.md
 

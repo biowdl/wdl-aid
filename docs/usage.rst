@@ -8,7 +8,7 @@ Before the documentation can be generated, each input in your WDL_ file must
 be given a description and category. This is done using WDL's parameter_meta_
 section:
 
-.. code-block::
+.. code-block:: javascript
 
     parameter_meta {
         name_of_input: {
@@ -40,7 +40,7 @@ documentation, eg. when using a sub-workflow which provides options which make
 no sense in the context of the overarching workflow. You can tell WDL_AID to
 omit certain inputs by adding the following to your workflow's meta_ section:
 
-.. code-block::
+.. code-block:: javascript
 
     WDL_AID: {
         exclude: ["input_name", "call.input_name"]
@@ -74,7 +74,7 @@ The default template supports the following meta section entries:
 
     eg.
 
-    .. code-block::
+    .. code-block:: javascript
 
         meta {
             authors: [
@@ -97,7 +97,7 @@ Running WDL-AID
 
 WDL-AID can be run with the following command:
 
-.. code-block::
+.. code-block:: bash
 
     wdl-aid <workflow.wdl>
 
