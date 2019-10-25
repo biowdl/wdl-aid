@@ -1,4 +1,2 @@
 tox
 coverage
-sphinx
-sphinx-rtd-theme
