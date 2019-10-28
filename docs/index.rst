@@ -13,6 +13,7 @@
    self
    usage
    custom-templates
+   HISTORY
 
 Welcome to WDL-AID's documentation!
 ===================================
