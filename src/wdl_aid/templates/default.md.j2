@@ -1,0 +1,89 @@
+# {{ workflow_name }}
+{{ workflow_meta.description }}
+
+## Inputs
+
+{% if required is defined %}
+### Required inputs
+{% for ri in required|sort(attribute='name') -%}
+<p name="{{ ri.name }}">
+        <b>{{ ri.name }}</b><br />
+        <i>{{ ri.type }} &mdash; Default: {{ ri.default }}</i><br />
+        {{ ri.description }}
+</p>
+{% endfor -%}
+{% endif -%}
+
+{% if common is defined %}
+### Other common inputs
+{% for ci in common|sort(attribute='name') -%}
+<p name="{{ ci.name }}">
+        <b>{{ ci.name }}</b><br />
+        <i>{{ ci.type }} &mdash; Default: {{ ci.default }}</i><br />
+        {{ ci.description }}
+</p>
+{% endfor -%}
+{% endif -%}
+
+{% if advanced is defined %}
+### Advanced inputs
+<details>
+<summary> Show/Hide </summary>
+{% for ai in advanced|sort(attribute='name') -%}
+<p name="{{ ai.name }}">
+        <b>{{ ai.name }}</b><br />
+        <i>{{ ai.type }} &mdash; Default: {{ ai.default }}</i><br />
+        {{ ai.description }}
+</p>
+{% endfor -%}
+</details>
+{% endif %}
+
+{% if other is defined %}
+### Other inputs
+<details>
+<summary> Show/Hide </summary>
+{% for oi in other|sort(attribute='name') -%}
+<p name="{{ oi.name }}">
+        <b>{{ oi.name }}</b><br />
+        <i>{{ oi.type }} &mdash; Default: {{ oi.default }}</i><br />
+        {{ oi.description }}
+</p>
+{% endfor -%}
+</details>
+{% endif %}
+
+{% if workflow_authors|length != 0 or workflow_all_authors|length != 0 -%}
+## Credits
+{% endif -%}
+
+{% if workflow_authors|length != 0 %}
+Workflow written by:
+{% for author in workflow_authors|sort(attribute='name') -%}
+- **{{ author.name }}**
+{%- if author.email is not none -%}
+{{' '}}({{ author.email }})
+{%- endif -%}
+{%- if author.email is not none -%}
+{{' '}}-- *({{ author.organization }})*
+{% endif -%}
+{%- endfor -%}
+{%- endif %}
+
+{% if workflow_all_authors|length != 0 %}
+Tasks and subworkflows written by:
+{% for author in workflow_all_authors -%}
+- **{{ author.name }}**
+{%- if author.email is not none -%}
+{{' '}}({{ author.email }})
+{%- endif -%}
+{%- if author.email is not none -%}
+{{' '}}-- *({{ author.organization }})*
+{% endif -%}
+{%- endfor -%}
+{%- endif %}
+
+<hr />
+
+> Generated using WDL AID ({{ wdl_aid_version }})
+
