@@ -30,7 +30,7 @@ from jinja2 import Template
 from wdl_aid import __version__
 
 
-DEFAULT_TEMPLATE = resource_string("templates",
+DEFAULT_TEMPLATE = resource_string("wdl_aid.templates",
                                    "default.md.j2").decode("utf-8")
 
 
