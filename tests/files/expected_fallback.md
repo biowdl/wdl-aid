@@ -10,11 +10,6 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
         <i>String &mdash; Default: None</i><br />
         The first input
 </p>
-<p name="test.input2">
-        <b>test.input2</b><br />
-        <i>String &mdash; Default: None</i><br />
-        The second input
-</p>
 
 ### Advanced inputs
 <details>
@@ -28,6 +23,11 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
         <b>test.echo.taskOptional</b><br />
         <i>String? &mdash; Default: None</i><br />
         an optional input
+</p>
+<p name="test.input2">
+        <b>test.input2</b><br />
+        <i>String &mdash; Default: ":p"</i><br />
+        The second input
 </p>
 <p name="test.sw.workflowOptional">
         <b>test.sw.workflowOptional</b><br />
