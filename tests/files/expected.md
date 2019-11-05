@@ -10,11 +10,6 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
         <i>String &mdash; Default: None</i><br />
         ???
 </p>
-<p name="test.input2">
-        <b>test.input2</b><br />
-        <i>String &mdash; Default: None</i><br />
-        ???
-</p>
 
 ### Advanced inputs
 <details>
@@ -34,6 +29,11 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
 <p name="test.echo.missingDescription">
         <b>test.echo.missingDescription</b><br />
         <i>String? &mdash; Default: None</i><br />
+        ???
+</p>
+<p name="test.input2">
+        <b>test.input2</b><br />
+        <i>String &mdash; Default: ":p"</i><br />
         ???
 </p>
 <p name="test.sw.workflowOptional">
