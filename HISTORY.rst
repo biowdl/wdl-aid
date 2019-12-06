@@ -3,8 +3,11 @@
 Changelog
 =========
 
-v0.1.1
+v0.2.0-dev
 ----------
+
+v0.1.1
+------
 
 - Inputs without a default will now be given a ``None`` value in the default
   field passed to jinja2, instead of a string containing ``None``.
