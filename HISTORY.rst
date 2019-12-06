@@ -3,7 +3,7 @@
 Changelog
 =========
 
-v0.2.0-dev
+v0.1.1
 ----------
 
 - Inputs without a default will now be given a ``None`` value in the default
