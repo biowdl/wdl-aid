@@ -182,7 +182,7 @@ def test_get_category_fallback_category():
 def test_gather_inputs():
     doc = WDL.load(str(filesdir / Path("workflow.wdl")))
     inputs, required_inputs = wa.gather_inputs(doc.workflow)
-    assert set(required_inputs) == set(["test.input1", "test.input2"])
+    assert required_inputs == ["test.input1"]
     for name, binding in inputs:
         assert name in ['test.sw.workflowOptional',
                         'test.echo.shouldBeExcluded',
@@ -230,29 +230,29 @@ def test_collect_values():
         "excluded_inputs": ["test.echo.shouldBeExcluded"],
         "wdl_aid_version": wa.__version__,
         'other': [{
-            'default': 'None',
+            'default': None,
             'description': '...',
             'name': 'test.sw.workflowOptional',
             'type': 'String?'
         }, {
-            'default': 'None',
+            'default': None,
             'description': '...',
             'name': 'test.echo.missingDescription',
             'type': 'String?'
-        }],
-        'required': [{
-            'default': 'None',
+        }, {
+            'default': '":p"',
             'description': '...',
             'name': 'test.input2',
             'type': 'String'
-        }, {
-            'default': 'None',
+        }],
+        'required': [{
+            'default': None,
             'description': '...',
             'name': 'test.input1',
             'type': 'String'
         }],
         'advanced': [{
-            'default': 'None',
+            'default': None,
             'description': 'an optional input',
             'name': 'test.echo.taskOptional',
             'type': 'String?'

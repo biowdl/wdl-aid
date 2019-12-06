@@ -31,7 +31,7 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
 </p>
 <p name="test.input2">
         <b>test.input2</b><br />
-        <i>String &mdash; Default: None</i><br />
+        <i>String &mdash; Default: ":p"</i><br />
         ???
 </p>
 <p name="test.sw.workflowOptional">

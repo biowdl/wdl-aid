@@ -292,7 +292,8 @@ def collect_values(wdlfile: str, separate_required: bool,
         entry = {
             "name": name,
             "type": str(inp.value.type),
-            "default": str(inp.value.expr),
+            "default":
+                str(inp.value.expr) if inp.value.expr is not None else None,
             "description":
                 get_description(parameter_meta, name, description_key,
                                 fallback_description,

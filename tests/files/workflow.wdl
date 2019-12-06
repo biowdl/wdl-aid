@@ -5,7 +5,7 @@ import "imported.wdl"
 workflow test {
     input {
         String input1
-        String input2
+        String input2 = ":p"
     }
     if (true) {
         call imported.echo {
