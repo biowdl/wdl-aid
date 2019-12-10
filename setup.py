@@ -45,7 +45,7 @@ setup(name="WDL-AID",
       package_dir={'': 'src'},
       package_data={'': ["*.j2"]},
       install_requires=[
-        "miniwdl==0.5",
+        "miniwdl>=0.5",
         "jinja2"
       ],
       entry_points={

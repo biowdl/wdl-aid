@@ -49,12 +49,11 @@ def test_fully_qualified_inputs():
     available_inputs = doc.workflow.available_inputs
     qualified_names = wa.fully_qualified_inputs(available_inputs,
                                                 doc.workflow.name)
-    assert [x[0] for x in qualified_names] == ['test.sw.workflowOptional',
+    assert {x[0] for x in qualified_names} == {'test.sw.workflowOptional',
                                                'test.echo.shouldBeExcluded',
                                                'test.echo.missingDescription',
                                                'test.echo.taskOptional',
-                                               'test.input2',
-                                               'test.input1']
+                                               'test.input2', 'test.input1'}
 
 
 def test_fully_qualified_parameter_meta():
@@ -197,67 +196,69 @@ def test_collect_values():
     values = wa.collect_values(str(filesdir / Path("workflow.wdl")), True,
                                "category", "other", "description", "...",
                                False, False)
-    assert values == {
-        "workflow_name": "test",
-        "workflow_file": str(filesdir / Path("workflow.wdl")),
-        "workflow_authors": [{
-            "name": "Percy",
-            "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
-            "organization": "Vox Machina"
-        }],
-        "workflow_all_authors": [{
-            "name": "Percy",
-            "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
-            "organization": "Vox Machina"
-        }, {
-            "name": "'Caleb'",
-            "email": "c.widowghast@example.com",
-            "organization": "The Mighty Nein"
-        }],
-        "workflow_meta": {
-            "WDL_AID": {
-                "exclude": ["echo.shouldBeExcluded"]
-            },
-            "authors": {
-                "name": "Percy",
-                "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
-                "organization": "Vox Machina"
-            },
-            "author": "Whomever",
-            "email": "whatever@where-ever.meh",
-            "description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\""
+    assert isinstance(values, dict)
+    assert values["workflow_name"] == "test"
+    assert values["workflow_file"] == str(filesdir / Path("workflow.wdl"))
+    assert values["workflow_authors"] ==  [{
+        "name": "Percy",
+        "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+        "organization": "Vox Machina"
+    }]
+    assert values["workflow_all_authors"] == [{
+        "name": "Percy",
+        "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+        "organization": "Vox Machina"
+    }, {
+        "name": "'Caleb'",
+        "email": "c.widowghast@example.com",
+        "organization": "The Mighty Nein"
+    }]
+    assert values["workflow_meta"] == {
+        "WDL_AID": {
+            "exclude": ["echo.shouldBeExcluded"]
         },
-        "excluded_inputs": ["test.echo.shouldBeExcluded"],
-        "wdl_aid_version": wa.__version__,
-        'other': [{
-            'default': None,
-            'description': '...',
-            'name': 'test.sw.workflowOptional',
-            'type': 'String?'
-        }, {
-            'default': None,
-            'description': '...',
-            'name': 'test.echo.missingDescription',
-            'type': 'String?'
-        }, {
-            'default': '":p"',
-            'description': '...',
-            'name': 'test.input2',
-            'type': 'String'
-        }],
-        'required': [{
-            'default': None,
-            'description': '...',
-            'name': 'test.input1',
-            'type': 'String'
-        }],
-        'advanced': [{
-            'default': None,
-            'description': 'an optional input',
-            'name': 'test.echo.taskOptional',
-            'type': 'String?'
-        }]
+        "authors": {
+            "name": "Percy",
+            "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
+            "organization": "Vox Machina"
+        },
+        "author": "Whomever",
+        "email": "whatever@where-ever.meh",
+        "description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\""
     }
+    assert values["excluded_inputs"] == ["test.echo.shouldBeExcluded"]
+    assert values["wdl_aid_version"] == wa.__version__
+    assert all(
+        [entry in [
+            {
+                'default': None,
+                'description': '...',
+                'name': 'test.sw.workflowOptional',
+                'type': 'String?'
+            }, {
+                'default': None,
+                'description': '...',
+                'name': 'test.echo.missingDescription',
+                'type': 'String?'
+            }, {
+                'default': '":p"',
+                'description': '...',
+                'name': 'test.input2',
+                'type': 'String'
+            }
+        ] for entry in values["other"]])
+    assert values["required"] == [{
+        'default': None,
+        'description': '...',
+        'name': 'test.input1',
+        'type': 'String'
+    }]
+    assert values["advanced"] == [{
+        'default': None,
+        'description': 'an optional input',
+        'name': 'test.echo.taskOptional',
+        'type': 'String?'
+    }]
 
 
 def test_collect_values_strict():
