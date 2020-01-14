@@ -267,6 +267,12 @@ def test_collect_values_strict():
                                    "category", "other", "description", "...",
                                    False, True)
 
+def test_no_workfow():
+    with pytest.raises(ValueError):
+        values = wa.collect_values(str(filesdir / Path("no_workflow.wdl")),
+                                   True, "category", "other", "description",
+                                   "...", False, False)
+
 
 def test_main_defaults(capsys):
     sys.argv = ["script", str(filesdir / Path("workflow.wdl"))]
