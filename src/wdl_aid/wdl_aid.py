@@ -267,6 +267,8 @@ def collect_values(wdlfile: str, separate_required: bool,
     """
     document = WDL.load(wdlfile)
     workflow = document.workflow
+    if workflow is None:
+        raise ValueError("No workflow is available in the WDL file.")
     inputs, required_inputs = gather_inputs(workflow)
     parameter_meta = gather_parameter_meta(workflow, workflow.name)
     gathered_meta = gather_meta(workflow, workflow.name)
