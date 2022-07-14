@@ -40,4 +40,7 @@ jobs:
           pip install tox coverage tox-gh-actions
       - name: test
         run: tox
+      - uses: codecov/codecov-action@v3
+        files: ./coverage.xml
+        
 
