@@ -1,4 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/wdl-aid.svg)](https://badge.fury.io/py/wdl-aid)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/wdl-aid)
 ![example workflow](https://github.com/biowdl/wdl-aid/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/biowdl/wdl-aid/branch/develop/graph/badge.svg?token=Ch9GSuTjGl)](https://codecov.io/gh/biowdl/wdl-aid)
 # WDL-AID

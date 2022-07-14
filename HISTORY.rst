@@ -6,7 +6,8 @@ Changelog
 v0.2.0-dev
 ----------
 
-- Miniwdl no longer needs to be specifically version 0.5.
+- Miniwdl no longer needs to be specifically version 0.5. Version 1.0 or
+  higher is now expected.
 - The error shown when there is no workflow in the given WDL file is now
   clearer.
 
