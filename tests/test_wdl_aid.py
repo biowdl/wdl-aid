@@ -246,19 +246,20 @@ def test_collect_values():
                 'name': 'test.input2',
                 'type': 'String'
             }
-        ] for entry in values["other"]])
-    assert values["required"] == [{
+        ] for entry in values["inputs"]["other"]])
+    assert values["inputs"]["required"] == [{
         'default': None,
         'description': '...',
         'name': 'test.input1',
         'type': 'String'
     }]
-    assert values["advanced"] == [{
+    assert values["inputs"]["advanced"] == [{
         'default': None,
         'description': 'an optional input',
         'name': 'test.echo.taskOptional',
         'type': 'String?'
     }]
+    assert values["outputs"] == [] #TODO test actual values here
 
 
 def test_collect_values_strict():
@@ -348,7 +349,7 @@ def test_main_extra(capsys):
     assert captured.out == expected
 
 
-def test_main_strict():
+def test_main_strict(): #TODO test strict inputs, strict outputs
     sys.argv = ["script", str(filesdir / Path("workflow.wdl")), "--strict"]
     with pytest.raises(ValueError):
         wa.main()

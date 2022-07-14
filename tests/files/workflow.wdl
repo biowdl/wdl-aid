@@ -17,9 +17,14 @@ workflow test {
             input:
         }
     }
+    output {
+        String? output1 = "Life needs things to live."
+        String output2 = "This one lacks a description."
+    }
     parameter_meta {
         input1: "The first input"
         input2: "The second input"
+        output1: "It does but it is blatenly obvious and simplistic."
     }
     meta {
         WDL_AID: {

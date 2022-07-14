@@ -279,6 +279,8 @@ def collect_values(wdlfile: str, separate_required: bool,
               "workflow_all_authors": gathered_meta["authors"],
               "workflow_meta": workflow.meta,
               "excluded_inputs": gathered_meta["exclude"],
+              "inputs": {},
+              "outputs": [],
               "wdl_aid_version": __version__}
 
     missing_parameter_meta = []
@@ -302,10 +304,22 @@ def collect_values(wdlfile: str, separate_required: bool,
                                 fallback_description_to_object)
         }
         try:
-            values[category].append(entry)
+            values["inputs"][category].append(entry)
         except KeyError:
-            values[category] = [entry]
-    if strict and len(missing_parameter_meta) > 0:
+            values["inputs"][category] = [entry]
+    for outp in workflow.effective_outputs:
+       qualified_output_name = f"{workflow.name}.{outp.name}"
+       if qualified_output_name not in parameter_meta:
+           missing_parameter_meta.append(name)
+       entry = {
+           "name": outp.name,
+           "type": str(outp.value),
+           "description": get_description(parameter_meta, 
+               qualified_output_name, description_key,
+               fallback_description, fallback_description_to_object)
+       }
+       values["outputs"].append(entry)
+    if strict and len(missing_parameter_meta) > 0: #TODO seperate strict per into inputs and outputs
         missed_inputs = "\n".join(missing_parameter_meta)
         raise ValueError(
             f"Missing parameter_meta for inputs:\n{missed_inputs}")
@@ -390,3 +404,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+#TODO adjust template
