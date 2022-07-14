@@ -1,3 +1,6 @@
+[![PyPI version](https://badge.fury.io/py/wdl-aid.svg)](https://badge.fury.io/py/wdl-aid)
+![example workflow](https://github.com/biowdl/wdl-aid/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/biowdl/wdl-aid/branch/develop/graph/badge.svg?token=Ch9GSuTjGl)](https://codecov.io/gh/biowdl/wdl-aid)
 # WDL-AID
 Generate documentation for the inputs of WDL workflows, based on the
 parameter_meta information defined in the WDL file.
