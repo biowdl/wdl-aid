@@ -21,12 +21,13 @@ jobs:
   test:
     name: Testing
     runs-on: ubuntu-latest
-    matrix:
-      python-version:
-        - 3.7
-        - 3.8
-        - 3.9
-        - 3.10
+    strategy:
+      matrix:
+        python-version:
+          - 3.7
+          - 3.8
+          - 3.9
+          - 3.10
     steps:
       - uses: actions/checkout@v1
       - name: Set up python ${{ matrix.python-version }}
