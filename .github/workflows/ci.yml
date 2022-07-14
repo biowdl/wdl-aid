@@ -41,6 +41,7 @@ jobs:
       - name: test
         run: tox
       - uses: codecov/codecov-action@v3
-        files: ./coverage.xml
-        
+        with:
+          files: ./coverage.xml
+
 
