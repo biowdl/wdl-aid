@@ -250,7 +250,7 @@ def gather_entries(name_and_bindings: List[Tuple[str, WDL.Env.Binding]],
                    fallback_description: str,
                    fallback_description_to_object: bool,
                    excluded_names: List[str], required_names: List[str] = []
-                  )-> Tuple[Dict[str, List[Dict[str, Any]]], List[str]]:
+                   ) -> Tuple[Dict[str, List[Dict[str, Any]]], List[str]]:
     """
     :param name_and_bindings: A tuple in which the first element is the
     fully qualified name of the binding in the second element.
@@ -266,7 +266,8 @@ def gather_entries(name_and_bindings: List[Tuple[str, WDL.Env.Binding]],
     key is not found.
     :param excluded_names: The names to exclude.
     :param required_names: The names to separate into a "required" category.
-    :return: The entries and a list of names for which parameter_meta is missing.
+    :return: The entries and a list of names for which parameter_meta is
+    missing.
     """
     entries = {}
     missing_parameter_meta = []
@@ -275,12 +276,12 @@ def gather_entries(name_and_bindings: List[Tuple[str, WDL.Env.Binding]],
             continue
         if name not in parameter_meta:
             missing_parameter_meta.append(name)
-        category = ("required"
-                    if name in required_names
+        category = ("required" if name in required_names
                     else get_category(parameter_meta, name, category_key,
                                       fallback_category))
-        entry_type = (str(binding.value.type) 
-                      if hasattr(binding.value, "type") else str(binding.value))
+        entry_type = (str(binding.value.type)
+                      if hasattr(binding.value, "type")
+                      else str(binding.value))
         entry = {
             "name": name,
             "type": entry_type,
@@ -290,7 +291,7 @@ def gather_entries(name_and_bindings: List[Tuple[str, WDL.Env.Binding]],
                                 fallback_description_to_object)
         }
         if hasattr(binding.value, "expr"):
-            entry["default"] = (str(binding.value.expr) 
+            entry["default"] = (str(binding.value.expr)
                                 if binding.value.expr is not None else None)
         try:
             entries[category].append(entry)
@@ -316,10 +317,10 @@ def collect_values(wdlfile: str, separate_required: bool,
     :param fallback_description_to_object: Whether or not the entire
     object should be returned for a given object if the description
     key is not found.
-    :param strict_inputs: When true, raise a ValueError if no parameter_meta is
-    available for any inputs.
-    :param strict_outputs: When true, raise a ValueError if no parameter_meta is
-    available for any outputs.
+    :param strict_inputs: When true, raise a ValueError if no parameter_meta
+    is available for any inputs.
+    :param strict_outputs: When true, raise a ValueError if no parameter_meta
+    is available for any outputs.
     :return: The values.
     """
     document = WDL.load(wdlfile)
@@ -328,21 +329,25 @@ def collect_values(wdlfile: str, separate_required: bool,
         raise ValueError("No workflow is available in the WDL file.")
 
     inputs, required_inputs = gather_inputs(workflow)
-    outputs = [(f"{workflow.name}.{outp.name}", outp) for outp in workflow.effective_outputs]
+    outputs = [(f"{workflow.name}.{outp.name}", outp)
+               for outp in workflow.effective_outputs]
     parameter_meta = gather_parameter_meta(workflow, workflow.name)
     gathered_meta = gather_meta(workflow, workflow.name)
     authors = wrap_in_list(workflow.meta.get("authors", []))[:]
-    
-    excluded_inputs = [inp[0] for inp in inputs if inp[0] in gathered_meta["exclude"]]
-    excluded_outputs = [outp[0] for outp in outputs if outp[0] in gathered_meta["exclude"]]
 
-    input_entries, inputs_missing_parameter_meta = gather_entries(inputs, parameter_meta,
-        category_key, fallback_category, description_key, fallback_description, 
-        fallback_description_to_object, excluded_inputs, 
-        required_inputs if separate_required else [])
-    output_entries, outputs_missing_parameter_meta = gather_entries(outputs, parameter_meta,
-        category_key, fallback_category, description_key, fallback_description, 
-        fallback_description_to_object, excluded_outputs)
+    excluded_inputs = [inp[0] for inp in inputs
+                       if inp[0] in gathered_meta["exclude"]]
+    excluded_outputs = [outp[0] for outp in outputs
+                        if outp[0] in gathered_meta["exclude"]]
+
+    input_entries, inputs_missing_parameter_meta = gather_entries(
+        inputs, parameter_meta, category_key, fallback_category,
+        description_key, fallback_description, fallback_description_to_object,
+        excluded_inputs, required_inputs if separate_required else [])
+    output_entries, outputs_missing_parameter_meta = gather_entries(
+        outputs, parameter_meta, category_key, fallback_category,
+        description_key, fallback_description, fallback_description_to_object,
+        excluded_outputs)
 
     values = {"workflow_name": workflow.name,
               "workflow_file": wdlfile,
@@ -355,16 +360,20 @@ def collect_values(wdlfile: str, separate_required: bool,
               "outputs": output_entries,
               "wdl_aid_version": __version__}
 
-    strict_inputs_error = strict_inputs and len(inputs_missing_parameter_meta) > 0
-    strict_outputs_error = strict_outputs and len(outputs_missing_parameter_meta) > 0
+    strict_inputs_error = (strict_inputs and
+                           len(inputs_missing_parameter_meta) > 0)
+    strict_outputs_error = (strict_outputs and
+                            len(outputs_missing_parameter_meta) > 0)
     if strict_inputs_error or strict_outputs_error:
         error_components = []
         if strict_inputs_error:
             missed_inputs = "\n".join(inputs_missing_parameter_meta)
-            error_components.append(f"Missing parameter_meta for inputs:\n{missed_inputs}")
+            error_components.append(
+                f"Missing parameter_meta for inputs:\n{missed_inputs}")
         if strict_outputs_error:
             missed_outputs = "\n".join(outputs_missing_parameter_meta)
-            error_components.append(f"Missing parameter_meta for outputs:\n{missed_outputs}")
+            error_components.append(
+                f"Missing parameter_meta for outputs:\n{missed_outputs}")
         raise ValueError("\n\n".join(error_components))
     return values
 
@@ -431,7 +440,7 @@ def main():
     values = collect_values(args.wdlfile, args.separate_required,
                             args.category_key, args.fallback_category,
                             args.description_key, args.fallback_description,
-                            args.fallback_description_to_object, 
+                            args.fallback_description_to_object,
                             args.strict or args.strict_inputs,
                             args.strict or args.strict_outputs)
     template = Template(args.template.read_text()
