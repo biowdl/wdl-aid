@@ -2,7 +2,6 @@
 {{ workflow_meta.description }}
 
 ## Inputs
-
 {% if inputs.required is defined %}
 ### Required inputs
 {% for ri in inputs.required|sort(attribute='name') -%}
@@ -37,7 +36,7 @@
 </p>
 {% endfor -%}
 </details>
-{% endif %}
+{% endif -%}
 
 {% if inputs.other is defined %}
 ### Other inputs
@@ -51,24 +50,28 @@
 </p>
 {% endfor -%}
 </details>
-{% endif %}
+{% endif -%}
 
-{% if outputs.other is defined %}
+{% if outputs|items|list|length != 0 %}
 ## Outputs
-{% for oo in outputs.other|sort(attribute='name') %}
+{% set outputs_flat = namespace(entries=[]) -%}
+{% for category, entries in outputs|items -%}
+{% set outputs_flat.entries = outputs_flat.entries + entries -%}
+{% endfor -%}
+{% for oo in outputs_flat.entries|sort(attribute='name') -%}
 <p name="{{ oo.name }}">
         <b>{{ oo.name }}</b><br />
         <i>{{ oo.type }}</i><br />
         {{ oo.description }}
 </p>
-{% endfor %}
-{% endif %}
+{% endfor -%}
+{% endif -%}
 
-{% if workflow_authors|length != 0 or workflow_all_authors|length != 0 -%}
+{% if workflow_authors|length != 0 or workflow_all_authors|length != 0 %}
 ## Credits
 {% endif -%}
 
-{% if workflow_authors|length != 0 %}
+{% if workflow_authors|length != 0 -%}
 Workflow written by:
 {% for author in workflow_authors|sort(attribute='name') -%}
 - **{{ author.name }}**
@@ -77,9 +80,9 @@ Workflow written by:
 {%- endif -%}
 {%- if author.email is not none -%}
 {{' '}}-- *({{ author.organization }})*
-{% endif -%}
-{%- endfor -%}
 {%- endif %}
+{% endfor -%}
+{% endif -%}
 
 {% if workflow_all_authors|length != 0 %}
 Tasks and subworkflows written by:
@@ -90,10 +93,9 @@ Tasks and subworkflows written by:
 {%- endif -%}
 {%- if author.email is not none -%}
 {{' '}}-- *({{ author.organization }})*
-{% endif -%}
-{%- endfor -%}
 {%- endif %}
-
+{% endfor -%}
+{% endif %}
 <hr />
 
 > Generated using WDL AID ({{ wdl_aid_version }})

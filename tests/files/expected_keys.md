@@ -3,7 +3,6 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
 
 ## Inputs
 
-
 ### Required inputs
 <p name="test.input1">
         <b>test.input1</b><br />
@@ -17,8 +16,6 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
         <i>String? &mdash; Default: None</i><br />
         alternative description
 </p>
-
-
 
 ### Other inputs
 <details>
@@ -40,47 +37,35 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
 </p>
 </details>
 
-
-
 ## Outputs
-
 <p name="test.output1">
         <b>test.output1</b><br />
         <i>String?</i><br />
         ???
 </p>
-
 <p name="test.output2">
         <b>test.output2</b><br />
         <i>String</i><br />
         ???
 </p>
-
 <p name="test.output3">
         <b>test.output3</b><br />
         <i>Array[File]</i><br />
         ???
 </p>
-
 <p name="test.output4">
         <b>test.output4</b><br />
         <i>Int</i><br />
         ???
 </p>
 
-
-
 ## Credits
-
 Workflow written by:
 - **Percy** (PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net) -- *(Vox Machina)*
-
-
 
 Tasks and subworkflows written by:
 - **Percy** (PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net) -- *(Vox Machina)*
 - **'Caleb'** (c.widowghast@example.com) -- *(The Mighty Nein)*
-
 
 <hr />
 

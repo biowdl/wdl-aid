@@ -76,7 +76,7 @@ def test_gather_parameter_meta():
                               "test.output1": "It does but it is blatenly obvious and simplistic.",
                               "test.output3": {"description": "A very descriptive description."},
                               "test.output4": {"description": "This one has a category!", 
-                                               "category": "hidden"}
+                                               "category": "category"}
                               }
 
 
@@ -279,7 +279,7 @@ def test_collect_values():
             "type": "Array[File]"
         }
     ]
-    assert values["outputs"]["hidden"] == [{
+    assert values["outputs"]["category"] == [{
         "description": "This one has a category!",
         "name": "test.output4",
         "type": "Int"

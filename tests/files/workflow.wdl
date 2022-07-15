@@ -29,7 +29,7 @@ workflow test {
         input2: "The second input"
         output1: "It does but it is blatenly obvious and simplistic."
         output3: {description: "A very descriptive description."}
-        output4: {description: "This one has a category!", category: "hidden"}
+        output4: {description: "This one has a category!", category: "category"}
     }
     meta {
         WDL_AID: {
