@@ -20,15 +20,20 @@ workflow test {
     output {
         String? output1 = "Life needs things to live."
         String output2 = "This one lacks a description."
+        Array[File] output3 = ["1", "2"]
+        Int output4 = 1
+        Boolean output5 = false
     }
     parameter_meta {
         input1: "The first input"
         input2: "The second input"
         output1: "It does but it is blatenly obvious and simplistic."
+        output3: {description: "A very descriptive description."}
+        output4: {description: "This one has a category!", category: "hidden"}
     }
     meta {
         WDL_AID: {
-            exclude: ["echo.shouldBeExcluded"]
+            exclude: ["echo.shouldBeExcluded", "output5"]
         }
         authors: {
             name: "Percy",
