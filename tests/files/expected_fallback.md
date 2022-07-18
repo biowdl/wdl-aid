@@ -39,7 +39,7 @@ Once upon a midnight dreary, while I pondered, weak and weary, over many a quant
 <p name="test.output1">
         <b>test.output1</b><br />
         <i>String?</i><br />
-        It does but it is blatenly obvious and simplistic.
+        It does but it is blatantly obvious and simplistic.
 </p>
 <p name="test.output2">
         <b>test.output2</b><br />

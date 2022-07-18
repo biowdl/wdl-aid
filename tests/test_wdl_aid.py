@@ -73,7 +73,7 @@ def test_gather_parameter_meta():
                                    "category": "advanced",
                                    "desc": "alternative description",
                                    "cat": "common"},
-                              "test.output1": "It does but it is blatenly obvious and simplistic.",
+                              "test.output1": "It does but it is blatantly obvious and simplistic.",
                               "test.output3": {"description": "A very descriptive description."},
                               "test.output4": {"description": "This one has a category!", 
                                                "category": "category"}

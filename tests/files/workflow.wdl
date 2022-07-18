@@ -27,7 +27,7 @@ workflow test {
     parameter_meta {
         input1: "The first input"
         input2: "The second input"
-        output1: "It does but it is blatenly obvious and simplistic."
+        output1: "It does but it is blatantly obvious and simplistic."
         output3: {description: "A very descriptive description."}
         output4: {description: "This one has a category!", category: "category"}
     }
