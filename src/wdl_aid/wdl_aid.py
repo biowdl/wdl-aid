@@ -397,11 +397,11 @@ def parse_args():
                              "specified.")
     parser.add_argument("-c", "--category-key", type=str, default="category",
                         help="The key used in the parameter_meta sections "
-                             "for the input category. [category]")
+                             "for the input/output category. [category]")
     parser.add_argument("-d", "--description-key", type=str,
                         default="description",
                         help="The key used in the parameter_meta section for "
-                             "the input description. [description]")
+                             "the input/output description. [description]")
     parser.add_argument("--do-not-separate-required", action="store_false",
                         dest="separate_required",
                         help="Do not put required inputs into a separate "
@@ -415,10 +415,10 @@ def parse_args():
                              "found.")
     parser.add_argument("--fallback-description", type=str, default="???",
                         help="The fallback value for when no description is "
-                             "defined for a given input. [???]")
+                             "defined for a given input/output. [???]")
     parser.add_argument("--fallback-category", type=str, default="other",
                         help="The fallback value for when no category is "
-                             "defined for a given input. [other]")
+                             "defined for a given input/output. [other]")
     parser.add_argument("-e", "--extra", type=Path,
                         help="A JSON file with additional data to be passed "
                              "to the jinja2 rendering engine. These values "

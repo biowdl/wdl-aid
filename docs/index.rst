@@ -18,8 +18,8 @@
 Welcome to WDL-AID's documentation!
 ===================================
 
-Generate documentation for the inputs of WDL_ workflows, based on the
-parameter_meta_ information defined in the WDL file.
+Generate documentation for the inputs and outputs of WDL_ workflows,
+based on the parameter_meta_ information defined in the WDL file.
 
 WLD-AID is developed by the Sequencing Analysis Support Core at the
 `Leiden University Medical Center <https://www.lumc.nl/>`_.
@@ -51,7 +51,7 @@ Running WDL-AID requires the following steps:
               category: "required"
       }
 
-   The available categories in the default template are:
+   For inputs the available categories in the default template are:
 
    - ``required``
    - ``common``
@@ -60,6 +60,9 @@ Running WDL-AID requires the following steps:
 
    Required inputs are automatically detected and their noted category will be
    overwritten with ``required``.
+
+   For outputs the default template will ignore the categories and simply list
+   all categories under one header.
 
 2. Once installed, WDL-AID can be run using the following command:
 
