@@ -49,11 +49,11 @@ def test_fully_qualified_inputs():
     available_inputs = doc.workflow.available_inputs
     qualified_names = wa.fully_qualified_inputs(available_inputs,
                                                 doc.workflow.name)
-    assert {x[0] for x in qualified_names} == {'test.sw.workflowOptional',
-                                               'test.echo.shouldBeExcluded',
-                                               'test.echo.missingDescription',
-                                               'test.echo.taskOptional',
-                                               'test.input2', 'test.input1'}
+    assert {x[0] for x in qualified_names} == {"test.sw.workflowOptional",
+                                               "test.echo.shouldBeExcluded",
+                                               "test.echo.missingDescription",
+                                               "test.echo.taskOptional",
+                                               "test.input2", "test.input1"}
 
 
 def test_fully_qualified_parameter_meta():
@@ -72,7 +72,11 @@ def test_gather_parameter_meta():
                                   {"description": "an optional input",
                                    "category": "advanced",
                                    "desc": "alternative description",
-                                   "cat": "common"}
+                                   "cat": "common"},
+                              "test.output1": "It does but it is blatantly obvious and simplistic.",
+                              "test.output3": {"description": "A very descriptive description."},
+                              "test.output4": {"description": "This one has a category!", 
+                                               "category": "category"}
                               }
 
 
@@ -95,7 +99,7 @@ def test_gather_meta():
     doc = WDL.load(str(filesdir / Path("workflow.wdl")))
     meta = wa.gather_meta(doc.workflow, doc.workflow.name)
     assert meta == {
-        "exclude": ["test.echo.shouldBeExcluded"],
+        "exclude": ["test.echo.shouldBeExcluded", "test.output5"],
         "authors": [{
             "name": "Percy",
             "email": "PercivalFredrickSteinVonMuselKlossowskiDeRolothe3rd@whitestone.net",
@@ -183,19 +187,19 @@ def test_gather_inputs():
     inputs, required_inputs = wa.gather_inputs(doc.workflow)
     assert required_inputs == ["test.input1"]
     for name, binding in inputs:
-        assert name in ['test.sw.workflowOptional',
-                        'test.echo.shouldBeExcluded',
-                        'test.echo.missingDescription',
-                        'test.echo.taskOptional',
-                        'test.input2',
-                        'test.input1']
+        assert name in ["test.sw.workflowOptional",
+                        "test.echo.shouldBeExcluded",
+                        "test.echo.missingDescription",
+                        "test.echo.taskOptional",
+                        "test.input2",
+                        "test.input1"]
         assert isinstance(binding, WDL.Env.Binding)
 
 
 def test_collect_values():
     values = wa.collect_values(str(filesdir / Path("workflow.wdl")), True,
                                "category", "other", "description", "...",
-                               False, False)
+                               False, False, False)
     assert isinstance(values, dict)
     assert values["workflow_name"] == "test"
     assert values["workflow_file"] == str(filesdir / Path("workflow.wdl"))
@@ -215,7 +219,7 @@ def test_collect_values():
     }]
     assert values["workflow_meta"] == {
         "WDL_AID": {
-            "exclude": ["echo.shouldBeExcluded"]
+            "exclude": ["echo.shouldBeExcluded", "output5"]
         },
         "authors": {
             "name": "Percy",
@@ -227,51 +231,98 @@ def test_collect_values():
         "description": "Once upon a midnight dreary, while I pondered, weak and weary, over many a quant and curious volumne of forgotten lore. While I nodded, nearly napping, suddenly there came a tapping, as if some one gently rapping, rapping at my chamber door. \"'Tis some visitor,\" I muttered, \"Tapping at my chamber door. This it is and nothing more!\""
     }
     assert values["excluded_inputs"] == ["test.echo.shouldBeExcluded"]
+    assert values["excluded_outputs"] == ["test.output5"]
     assert values["wdl_aid_version"] == wa.__version__
     assert all(
         [entry in [
             {
-                'default': None,
-                'description': '...',
-                'name': 'test.sw.workflowOptional',
-                'type': 'String?'
+                "default": None,
+                "description": "...",
+                "name": "test.sw.workflowOptional",
+                "type": "String?"
             }, {
-                'default': None,
-                'description': '...',
-                'name': 'test.echo.missingDescription',
-                'type': 'String?'
+                "default": None,
+                "description": "...",
+                "name": "test.echo.missingDescription",
+                "type": "String?"
             }, {
-                'default': '":p"',
-                'description': '...',
-                'name': 'test.input2',
-                'type': 'String'
+                "default": '":p"',
+                "description": "...",
+                "name": "test.input2",
+                "type": "String"
             }
-        ] for entry in values["other"]])
-    assert values["required"] == [{
-        'default': None,
-        'description': '...',
-        'name': 'test.input1',
-        'type': 'String'
+        ] for entry in values["inputs"]["other"]])
+    assert values["inputs"]["required"] == [{
+        "default": None,
+        "description": "...",
+        "name": "test.input1",
+        "type": "String"
     }]
-    assert values["advanced"] == [{
-        'default': None,
-        'description': 'an optional input',
-        'name': 'test.echo.taskOptional',
-        'type': 'String?'
+    assert values["inputs"]["advanced"] == [{
+        "default": None,
+        "description": "an optional input",
+        "name": "test.echo.taskOptional",
+        "type": "String?"
+    }]
+    assert values["outputs"]["other"] == [
+        {
+            "description": "...",
+            "name": "test.output1",
+            "type": "String?"
+        },{
+            "description": "...",
+            "name": "test.output2",
+            "type": "String"
+        },{
+            "description": "A very descriptive description.",
+            "name": "test.output3",
+            "type": "Array[File]"
+        }
+    ]
+    assert values["outputs"]["category"] == [{
+        "description": "This one has a category!",
+        "name": "test.output4",
+        "type": "Int"
     }]
 
 
 def test_collect_values_strict():
     with pytest.raises(ValueError):
-        values = wa.collect_values(str(filesdir / Path("workflow.wdl")), True,
+        values = wa.collect_values(str(filesdir / Path("imported.wdl")), True,
                                    "category", "other", "description", "...",
-                                   False, True)
+                                   False, True, True)
+    with pytest.raises(ValueError):
+        values = wa.collect_values(str(filesdir / Path("no_output_parameter_meta.wdl")), True,
+                                   "category", "other", "description", "...",
+                                   False, True, True)
+
+
+def test_collect_values_strict_inputs():
+    with pytest.raises(ValueError):
+        values = wa.collect_values(str(filesdir / Path("imported.wdl")), True,
+                                   "category", "other", "description", "...",
+                                   False, True, False)
+    wa.collect_values(str(filesdir / Path("no_output_parameter_meta.wdl")), True,
+                                   "category", "other", "description", "...",
+                                   False, True, False)
+
+
+
+def test_collect_values_strict_outputs():
+    with pytest.raises(ValueError):
+        values = wa.collect_values(str(filesdir / Path("no_output_parameter_meta.wdl")), True,
+                                   "category", "other", "description", "...",
+                                   False, False, True)
+    wa.collect_values(str(filesdir / Path("imported.wdl")), True,
+                                   "category", "other", "description", "...",
+                                   False, False, True)
+
 
 def test_no_workfow():
     with pytest.raises(ValueError):
         values = wa.collect_values(str(filesdir / Path("no_workflow.wdl")),
                                    True, "category", "other", "description",
-                                   "...", False, False)
+                                   "...", False, False, False)
 
 
 def test_main_defaults(capsys):
@@ -350,5 +401,25 @@ def test_main_extra(capsys):
 
 def test_main_strict():
     sys.argv = ["script", str(filesdir / Path("workflow.wdl")), "--strict"]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         wa.main()
+    assert e.value.args[0] == ("Missing parameter_meta for inputs:\n"
+                               "test.echo.missingDescription\n"
+                               "test.sw.workflowOptional\n\n"
+                               "Missing parameter_meta for outputs:\n"
+                               "test.output2")
+
+def test_main_strict_inputs():
+    sys.argv = ["script", str(filesdir / Path("workflow.wdl")), "--strict-inputs"]
+    with pytest.raises(ValueError) as e:
+        wa.main()
+    assert e.value.args[0] == ("Missing parameter_meta for inputs:\n"
+                               "test.echo.missingDescription\n"
+                               "test.sw.workflowOptional")
+
+def test_main_strict_outputs():
+    sys.argv = ["script", str(filesdir / Path("workflow.wdl")), "--strict-outputs"]
+    with pytest.raises(ValueError) as e:
+        wa.main()
+    assert e.value.args[0] == ("Missing parameter_meta for outputs:\n"
+                               "test.output2")

@@ -21,11 +21,14 @@ The following variables are made available to the template:
 - ``workflow_all_authors``: A list of author information taken from the
   ``authors`` fields from the workflow and called sub-workflows and tasks.
 - ``workflow_meta``: A direct copy of the workflow's meta section.
-- ``excluded_inputs``: A list of fully-qualified inputs which will are available,
+- ``excluded_inputs``: A list of fully-qualified inputs which are available
+  but will be excluded from the rendering process.
+- ``excluded_outputs``: A list of fully-qualified ouputs which are available
   but will be excluded from the rendering process.
 - ``wdl_aid_version``: The version of WDL-AID used
-- Per category a list of dictionaries. Each of these dictionaries will
-  describe an input and contains the following keys:
+- ``inputs``: A dictionary which for each input category contains a list of
+  dictionaries. These inner dictionaries will describe an input and
+  contains the following keys:
 
   - ``name``: The (fully qualified) name of the input.
   - ``type``: The WDL value type of the input (eg. ``String?`` or
@@ -33,6 +36,16 @@ The following variables are made available to the template:
   - ``default``: The default value of the input. If an input has no
     default, then ``None``.
   - ``description``: The description of the input as specified in the
+    parameter_meta sections in the WDL file(s).
+
+- ``outputs``: A dictionary which for each output category contains a list of
+  dictionaries. These inner dictionaries will describe an output and
+  contains the following keys:
+
+  - ``name``: The (fully qualified) name of the output.
+  - ``type``: The WDL value type of the output (eg. ``String?`` or
+    ``Pair[Int, Boolean]``).
+  - ``description``: The description of the output as specified in the
     parameter_meta sections in the WDL file(s).
 
 - ``extra``: Whatever value is contained within the JSON file
@@ -61,7 +74,7 @@ WDL-AID.
         <h2>Required Inputs</h2>
 
         <ul>
-        {% for ri in required|sort(attribute='name') %}
+        {% for ri in inputs.required|sort(attribute='name') %}
             <li>
                 <dl>
                     <dt>name</dt>
