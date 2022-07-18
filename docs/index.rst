@@ -40,7 +40,7 @@ Basic usage
 ^^^^^^^^^^^
 Running WDL-AID requires the following steps:
 
-1. Add parameter_meta_ sections to you tasks and workflows.
+1. Add parameter_meta_ sections to your tasks and workflows.
    These should be objects containing both a description and category:
 
    .. code-block:: javascript
