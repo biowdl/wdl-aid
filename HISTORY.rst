@@ -3,8 +3,8 @@
 Changelog
 =========
 
-v1.0.0-dev
-----------
+v1.0.0
+------
 
 - Strict mode can now be set for inputs and outputs separatly using the
   ``--strict-inputs`` and ``--strict-outputs`` flags respectively.
