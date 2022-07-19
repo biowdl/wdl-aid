@@ -1,2 +1,2 @@
-miniwdl==0.5
+miniwdl>=1.0
 jinja2

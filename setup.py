@@ -24,7 +24,7 @@ with open("README.md", "r") as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
 setup(name="WDL-AID",
-      version="0.1.1",
+      version="1.0.0",
       description="Automatic Input Documentation for WDL workflows",
       long_description=LONG_DESCRIPTION,
       long_description_content_type='text/markdown',
@@ -33,6 +33,9 @@ setup(name="WDL-AID",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
       ],
@@ -45,7 +48,7 @@ setup(name="WDL-AID",
       package_dir={'': 'src'},
       package_data={'': ["*.j2"]},
       install_requires=[
-        "miniwdl==0.5",
+        "miniwdl>=1.0",
         "jinja2"
       ],
       entry_points={
