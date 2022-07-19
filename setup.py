@@ -24,7 +24,7 @@ with open("README.md", "r") as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
 setup(name="WDL-AID",
-      version="1.0.0",
+      version="1.1.0-dev",
       description="Automatic Input Documentation for WDL workflows",
       long_description=LONG_DESCRIPTION,
       long_description_content_type='text/markdown',
@@ -36,7 +36,7 @@ setup(name="WDL-AID",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
       ],
       keywords=["bioinformatics", "WDL", "documentation"],
