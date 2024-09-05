@@ -3,6 +3,13 @@
 Changelog
 =========
 
+v1.0.1
+------
+
+- Added setuptools as a dependency. In some environments setuptools may
+  not be installed by default. This package uses it for its core
+  functionality, so it was added as an explicit requirment.
+
 v1.0.0
 ------
 
